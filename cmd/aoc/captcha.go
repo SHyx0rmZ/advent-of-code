@@ -9,94 +9,93 @@ import (
 )
 
 type captchaState struct {
-	Last byte
-	Sum int
-}
-
-func (s *captchaState) count(v interface{}) {
-	b := v.(byte)
-	if s.Last == b {
-		s.Sum += int(b - '0')
-	}
-
-	s.Last = b
-}
-
-type captchaStateHalf struct {
 	Ring *Ring
-	Last byte
-	Sum int
+	Func func(*captchaState) func(*Ring)
+
+	sum int
 }
 
-func newCaptchaStateHalf(r *ring.Ring) *captchaStateHalf {
-	return &captchaStateHalf{
-		Ring: (*Ring)(r),
+func (s *captchaState) Count() int {
+	if s.Func != nil {
+		s.Ring.Do(s.Func(s))
+	}
+	return s.sum
+}
+
+func (s *captchaState) half() func(*Ring) {
+	return func(r *Ring) {
+		c := r.Advance(r.Len() / 2)
+		if c.Value == r.Value {
+			s.sum += int(r.Value.(rune) - '0')
+		}
 	}
 }
 
-func (s *captchaStateHalf) Count() int {
-	s.Ring.Do(s.count)
-	return s.Sum
-}
-
-func (s *captchaStateHalf) count(r *ring.Ring) {
-	n := (*Ring)(r).Advance(r.Len() / 2)
-	if n.Value.(byte) == r.Value.(byte) {
-		s.Sum += int(r.Value.(byte) - '0')
+func (s *captchaState) next() func(*Ring) {
+	return func(r *Ring) {
+		c := r.Next()
+		if c.Value == r.Value {
+			s.sum += int(r.Value.(rune) - '0')
+		}
 	}
 }
 
 type Ring ring.Ring
 
-func (r *Ring) Do(f func(*ring.Ring)) {
-	x := (*ring.Ring)(r)
-	if x != nil {
-		f(x)
-		for p := x.Next(); p != x; p = p.Next() {
+func NewRing(s string) *Ring {
+	r := ring.New(len(s))
+	for _, c := range s {
+		r.Value = c
+		r = r.Next()
+	}
+	return (*Ring)(r)
+}
+
+func (r *Ring) Advance(n int) *Ring {
+	p := r
+	if p != nil {
+		for i := 0; i < n; i++ {
+			p = p.Next()
+		}
+	}
+	return p
+}
+
+func (r *Ring) Do(f func(*Ring)) {
+	if r != nil {
+		f(r)
+		for p := r.Next(); p != r; p = p.Next() {
 			f(p)
 		}
 	}
 }
 
-func (r *Ring) Advance(n int) *Ring {
-	if r == nil {
-		return r
-	}
+func (r *Ring) Len() int {
+	return (*ring.Ring)(r).Len()
+}
 
-	x := (*ring.Ring)(r)
+func (r *Ring) Next() *Ring {
+	return (*Ring)((*ring.Ring)(r).Next())
+}
 
-	for i := 0; i < n; i++ {
-		x = x.Next()
-	}
-
-	return (*Ring)(x)
+func (r *Ring) Prev() *Ring {
+	return (*Ring)((*ring.Ring)(r).Prev())
 }
 
 func Captcha(c string) int {
-	r := ring.New(len(c))
-
-	for i := 0; i < len(c); i++ {
-		r.Value = c[i]
-		r = r.Next()
-	}
-
 	s := captchaState{
-		Last: r.Prev().Value.(byte),
+		Ring: NewRing(c),
+		Func: (*captchaState).next,
 	}
-	r.Do(s.count)
 
-	return s.Sum
+	return s.Count()
 }
 
 func CaptchaHalf(c string) int {
-	r := ring.New(len(c))
-
-	for i := 0; i < len(c); i++ {
-		r.Value = c[i]
-		r = r.Next()
+	s := captchaState{
+		Ring: NewRing(c),
+		Func: (*captchaState).half,
 	}
-
-	s := newCaptchaStateHalf(r)
 
 	return s.Count()
 }

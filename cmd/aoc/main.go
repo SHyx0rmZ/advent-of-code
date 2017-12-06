@@ -4,7 +4,7 @@ import "os"
 
 //go:generate go-bindata ../../data/...
 
-var commands = map[string]func()error{
+var commands = map[string]func() error{
 	"captcha": captchaCommand,
 }
 
