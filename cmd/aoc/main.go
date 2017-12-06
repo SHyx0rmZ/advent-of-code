@@ -5,7 +5,7 @@ import "os"
 //go:generate go-bindata ../../data/...
 
 var commands = map[string]func() error{
-	"captcha": captchaCommand,
+	"captcha":  captchaCommand,
 	"checksum": checksumCommand,
 }
 
