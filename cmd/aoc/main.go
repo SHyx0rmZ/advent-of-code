@@ -6,6 +6,7 @@ import "os"
 
 var commands = map[string]func() error{
 	"captcha": captchaCommand,
+	"checksum": checksumCommand,
 }
 
 func main() {
