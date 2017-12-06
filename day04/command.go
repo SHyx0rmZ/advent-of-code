@@ -6,6 +6,8 @@ import (
 	"io/ioutil"
 	"bytes"
 	"fmt"
+	"sort"
+	"strconv"
 )
 
 func Command() error {
@@ -35,9 +37,15 @@ func Command() error {
 	var sum int
 
 	switch os.Args[2] {
-	case "count":
+	case "duplicate":
 		for _, passphrase := range bytes.Split(c, []byte("\n")) {
 			if Valid(string(passphrase)) {
+				sum++
+			}
+		}
+	case "anagram":
+		for _, passphrase := range bytes.Split(c, []byte("\n")) {
+			if ValidEx(string(passphrase)) {
 				sum++
 			}
 		}
@@ -62,6 +70,31 @@ func Valid(p string) bool {
 			return false
 		}
 		set[word] = struct{}{}
+	}
+	return true
+}
+
+func ValidEx(p string) bool {
+	set := make(map[string]struct{})
+	for _, word := range strings.Split(p, " ") {
+		set2 := make(map[rune]int)
+		for _, r := range word {
+			set2[r]++
+		}
+		var keys []int
+		for r := range set2 {
+			keys = append(keys, int(r))
+		}
+		sort.Ints(keys)
+		key := ""
+		for _, k := range keys {
+			key += string(rune(k)) + strconv.Itoa(set2[rune(k)])
+		}
+		_, ok := set[key]
+		if ok {
+			return false
+		}
+		set[key] = struct{}{}
 	}
 	return true
 }
