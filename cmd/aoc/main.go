@@ -1,15 +1,16 @@
 package main
 
 import (
-	"github.com/SHyx0rmZ/advent-of-code/day04"
 	"os"
+
+	"github.com/SHyx0rmZ/advent-of-code/day01"
+	"github.com/SHyx0rmZ/advent-of-code/day02"
+	"github.com/SHyx0rmZ/advent-of-code/day04"
 )
 
-//go:generate go-bindata ../../data/...
-
 var commands = map[string]func() error{
-	"captcha":     captchaCommand,
-	"checksum":    checksumCommand,
+	"captcha":     day01.Command,
+	"checksum":    day02.Command,
 	"passphrases": day04.Command,
 }
 

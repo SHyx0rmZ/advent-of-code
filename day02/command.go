@@ -1,4 +1,4 @@
-package day04
+package day02
 
 import (
 	"bytes"
@@ -22,18 +22,10 @@ func Command() error {
 	var sum int
 
 	switch os.Args[2] {
-	case "duplicate":
-		for _, passphrase := range bytes.Split(c, []byte("\n")) {
-			if Valid(string(passphrase)) {
-				sum++
-			}
-		}
-	case "anagram":
-		for _, passphrase := range bytes.Split(c, []byte("\n")) {
-			if ValidEx(string(passphrase)) {
-				sum++
-			}
-		}
+	case "minmax":
+		sum, err = ChecksumMinMax(c)
+	case "division":
+		sum, err = ChecksumDivision(c)
 	default:
 		panic("unknown sub-command: " + os.Args[2])
 	}

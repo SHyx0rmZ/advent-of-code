@@ -1,8 +1,8 @@
 package day04_test
 
 import (
-	"testing"
 	"github.com/SHyx0rmZ/advent-of-code/day04"
+	"testing"
 )
 
 func TestValidEE(t *testing.T) {
@@ -33,14 +33,12 @@ func TestValidExFGHIJ(t *testing.T) {
 	}
 }
 
-
 func TestValidExECDAB(t *testing.T) {
 	r := day04.ValidEx("abcde xyz ecdab")
 	if r != false {
 		t.Errorf("got %t, want %t", r, false)
 	}
 }
-
 
 func TestValidExABJ(t *testing.T) {
 	r := day04.ValidEx("a ab abc abd abf abj")
@@ -49,14 +47,12 @@ func TestValidExABJ(t *testing.T) {
 	}
 }
 
-
 func TestValidExOOOO(t *testing.T) {
 	r := day04.ValidEx("iiii oiii ooii oooi oooo")
 	if r != true {
 		t.Errorf("got %t, want %t", r, true)
 	}
 }
-
 
 func TestValidExIIIO(t *testing.T) {
 	r := day04.ValidEx("oiii ioii iioi iiio")
