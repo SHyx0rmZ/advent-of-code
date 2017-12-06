@@ -1,12 +1,16 @@
 package main
 
-import "os"
+import (
+	"os"
+	"github.com/SHyx0rmZ/advent-of-code/day04"
+)
 
 //go:generate go-bindata ../../data/...
 
 var commands = map[string]func() error{
 	"captcha":  captchaCommand,
 	"checksum": checksumCommand,
+	"passphrases": day04.Command,
 }
 
 func main() {
