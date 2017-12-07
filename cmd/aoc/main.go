@@ -7,6 +7,7 @@ import (
 	"github.com/SHyx0rmZ/advent-of-code/day02"
 	"github.com/SHyx0rmZ/advent-of-code/day04"
 	"github.com/SHyx0rmZ/advent-of-code/day05"
+	"github.com/SHyx0rmZ/advent-of-code/day06"
 )
 
 var commands = map[string]func() error{
@@ -14,6 +15,7 @@ var commands = map[string]func() error{
 	"checksum":    day02.Command,
 	"passphrases": day04.Command,
 	"jumps":       day05.Command,
+	"memory":      day06.Command,
 }
 
 func main() {
