@@ -6,53 +6,56 @@ import (
 )
 
 func JumpStrange(s string) (int, error) {
-	var list []int
-	var p int
-	var steps int
-	for _, line := range strings.Split(s, "\n") {
-		i, err := strconv.Atoi(line)
-		if err != nil {
-			return 0, err
-		}
-		list = append(list, i)
+	list, err := newJumpList(s)
+	if err != nil {
+		return 0, err
 	}
-	for {
-		j := list[p]
-		list[p]++
-		p += j
-		steps++
-
-		if p < 0 || p > len(list)-1 {
-			break
-		}
-	}
-	return steps, nil
+	return evalJumpList(list, incOnly), nil
 }
 
 func JumpEvenStranger(s string) (int, error) {
-	var list []int
+	list, err := newJumpList(s)
+	if err != nil {
+		return 0, err
+	}
+	return evalJumpList(list, incDec), nil
+}
+
+func evalJumpList(list []int, op func(int)int) int {
 	var p int
 	var steps int
-	for _, line := range strings.Split(s, "\n") {
-		i, err := strconv.Atoi(line)
-		if err != nil {
-			return 0, err
-		}
-		list = append(list, i)
-	}
 	for {
-		j := list[p]
-		if j >= 3 {
-			list[p]--
-		} else {
-			list[p]++
-		}
-		p += j
+		o := list[p]
+		list[p] += op(o)
+		p += o
 		steps++
 
 		if p < 0 || p > len(list)-1 {
 			break
 		}
 	}
-	return steps, nil
+	return steps
+}
+
+func incDec(o int) int {
+	if o >= 3 {
+		return -1
+	}
+	return 1
+}
+
+func incOnly(o int) int {
+	return 1
+}
+
+func newJumpList(s string) ([]int, error) {
+	var list []int
+	for _, line := range strings.Split(s, "\n") {
+		i, err := strconv.Atoi(line)
+		if err != nil {
+			return nil, err
+		}
+		list = append(list, i)
+	}
+	return list, nil
 }
