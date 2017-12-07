@@ -1,8 +1,9 @@
 package day04_test
 
 import (
-	"github.com/SHyx0rmZ/advent-of-code/day04"
 	"testing"
+
+	"github.com/SHyx0rmZ/advent-of-code/day04"
 )
 
 func TestValidEE(t *testing.T) {
