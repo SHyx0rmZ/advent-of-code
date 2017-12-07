@@ -6,8 +6,8 @@ import (
 )
 
 func TestBalanceState(t *testing.T) {
-	r := day06.BalanceState([]int{0, 2, 7, 0})
-	if r != 5 {
-		t.Errorf("got %d, want %d", r, 5)
+	r1, r2 := day06.BalanceState([]int{0, 2, 7, 0})
+	if r1 != 4 || r2 != 5 {
+		t.Errorf("got (%d, %d), want (%d, %d)", r1, r2, 4, 5)
 	}
 }

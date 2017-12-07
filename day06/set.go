@@ -1,11 +1,11 @@
 package day06
 
 type set struct {
-	M map[string]struct{}
+	M map[string]int
 }
 
 func (s *set) Add(i string) {
-	s.M[i] = struct{}{}
+	s.M[i] = len(s.M)
 }
 
 func (s *set) Contains(i string) bool {
@@ -13,6 +13,6 @@ func (s *set) Contains(i string) bool {
 	return ok
 }
 
-func (s *set) Len() int {
-	return len(s.M)
+func (s *set) LoopSize(i string) int {
+	return len(s.M) - s.M[i]
 }

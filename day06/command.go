@@ -42,11 +42,13 @@ func Command() error {
 		x++
 	}
 
-	steps := BalanceState(banks)
+	length, steps := BalanceState(banks)
 
 	switch os.Args[2] {
 	case "steps":
 		_, err = fmt.Printf("%d\n", steps)
+	case "loopsize":
+		_, err = fmt.Printf("%d\n", length)
 	default:
 		panic("unknown sub-command: " + os.Args[2])
 	}
@@ -54,12 +56,12 @@ func Command() error {
 	return err
 }
 
-func BalanceState(banks []int) int {
+func BalanceState(banks []int) (int, int) {
 	m := &memory{}
 	m.Reload(banks)
 	var steps int
 	s := set{
-		M: make(map[string]struct{}),
+		M: make(map[string]int),
 	}
 	for {
 		steps++
@@ -69,5 +71,5 @@ func BalanceState(banks []int) int {
 		}
 		s.Add(m.String())
 	}
-	return steps
+	return s.LoopSize(m.String()), steps
 }
