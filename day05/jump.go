@@ -21,7 +21,7 @@ func JumpEvenStranger(s string) (int, error) {
 	return evalJumpList(list, incDec), nil
 }
 
-func evalJumpList(list []int, op func(int)int) int {
+func evalJumpList(list []int, op func(int) int) int {
 	var p int
 	var steps int
 	for {
