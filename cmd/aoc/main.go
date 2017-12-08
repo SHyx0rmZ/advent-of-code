@@ -9,15 +9,18 @@ import (
 	"github.com/SHyx0rmZ/advent-of-code/day05"
 	"github.com/SHyx0rmZ/advent-of-code/day06"
 	"github.com/SHyx0rmZ/advent-of-code/day07"
+	"github.com/SHyx0rmZ/advent-of-code/day08"
 )
 
 var commands = map[string]func() error{
-	"captcha":     day01.Command,
-	"checksum":    day02.Command,
+	"captcha":  day01.Command,
+	"checksum": day02.Command,
+	//"spiral": day03.Command,
 	"passphrases": day04.Command,
 	"jumps":       day05.Command,
 	"memory":      day06.Command,
 	"trees":       day07.Command,
+	"registers":   day08.Command,
 }
 
 func main() {
