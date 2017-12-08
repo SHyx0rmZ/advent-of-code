@@ -114,19 +114,20 @@ func Command() error {
 		},
 	}
 
+	l := 0
+
 	for _, command := range commands {
 		if conds[command.Condition.Operation](command.Condition.Register, command.Condition.Amount) {
 			ops[command.Do.Operation](command.Do.Register, command.Do.Amount)
 		}
-	}
 
-	l := 0
-
-	for _, n := range regs {
-		if n > l {
-			l = n
+		for _, n := range regs {
+			if n > l {
+				l = n
+			}
 		}
 	}
+
 
 	_, err = fmt.Printf("%d\n", l)
 
