@@ -5,18 +5,18 @@ import (
 
 	"github.com/SHyx0rmZ/advent-of-code/day01"
 	"github.com/SHyx0rmZ/advent-of-code/day02"
+	"github.com/SHyx0rmZ/advent-of-code/day03"
 	"github.com/SHyx0rmZ/advent-of-code/day04"
 	"github.com/SHyx0rmZ/advent-of-code/day05"
 	"github.com/SHyx0rmZ/advent-of-code/day06"
 	"github.com/SHyx0rmZ/advent-of-code/day07"
 	"github.com/SHyx0rmZ/advent-of-code/day08"
-	"github.com/SHyx0rmZ/advent-of-code/day03"
 )
 
 var commands = map[string]func() error{
-	"captcha":  day01.Command,
-	"checksum": day02.Command,
-	"spiral": day03.Command,
+	"captcha":     day01.Command,
+	"checksum":    day02.Command,
+	"spiral":      day03.Command,
 	"passphrases": day04.Command,
 	"jumps":       day05.Command,
 	"memory":      day06.Command,
