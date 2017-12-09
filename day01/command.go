@@ -2,32 +2,19 @@ package day01
 
 import (
 	"bytes"
-	"fmt"
-	"os"
-
-	"github.com/SHyx0rmZ/advent-of-code/input"
+	"strconv"
 )
 
-func Command() error {
-	if len(os.Args) < 4 {
-		panic("not enough arguments")
-	}
+type problem struct{}
 
-	c, err := input.ReadInput(os.Args[3])
-	if err != nil {
-		return err
-	}
-	c = bytes.TrimSpace(c)
+func Problem() *problem {
+	return &problem{}
+}
 
-	switch os.Args[2] {
-	case "next":
-		_, err = fmt.Printf("%d\n", CaptchaNext(string(c)))
-	case "half":
+func (problem) PartOne(data []byte) (string, error) {
+	return strconv.Itoa(CaptchaNext(string(bytes.TrimSpace(data)))), nil
+}
 
-		_, err = fmt.Printf("%d\n", CaptchaHalf(string(c)))
-	default:
-		panic("unknown sub-command: " + os.Args[2])
-	}
-
-	return err
+func (problem) PartTwo(data []byte) (string, error) {
+	return strconv.Itoa(CaptchaHalf(string(bytes.TrimSpace(data)))), nil
 }

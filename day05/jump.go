@@ -51,6 +51,9 @@ func incOnly(o int) int {
 func newJumpList(s string) ([]int, error) {
 	var list []int
 	for _, line := range strings.Split(s, "\n") {
+		if line == "" {
+			continue
+		}
 		i, err := strconv.Atoi(line)
 		if err != nil {
 			return nil, err

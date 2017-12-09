@@ -5,9 +5,16 @@ import (
 	"testing"
 )
 
-func TestBalanceState(t *testing.T) {
-	r1, r2 := day06.BalanceState([]int{0, 2, 7, 0})
-	if r1 != 4 || r2 != 5 {
-		t.Errorf("got (%d, %d), want (%d, %d)", r1, r2, 4, 5)
+func TestProblem_PartOne(t *testing.T) {
+	r, err := day06.Problem().PartOne([]byte("0\t2\t7\t0\n"))
+	if r != "5" || err != nil {
+		t.Errorf("got (%s, %+v), want (%d, %+v)", r, err, 5, nil)
+	}
+}
+
+func TestProblem_PartTwo(t *testing.T) {
+	r, err := day06.Problem().PartTwo([]byte("0\t2\t7\t0\n"))
+	if r != "4" || err != nil {
+		t.Errorf("got (%s, %+v), want (%d, %+v)", r, err, 4, nil)
 	}
 }

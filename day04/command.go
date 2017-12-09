@@ -2,47 +2,31 @@ package day04
 
 import (
 	"bytes"
-	"fmt"
-	"os"
-
-	"github.com/SHyx0rmZ/advent-of-code/input"
+	"strconv"
 )
 
-func Command() error {
-	if len(os.Args) < 4 {
-		panic("not enough arguments")
-	}
+type problem struct{}
 
-	c, err := input.ReadInput(os.Args[3])
-	if err != nil {
-		return err
-	}
-	c = bytes.TrimSpace(c)
+func Problem() *problem {
+	return &problem{}
+}
 
+func (problem) PartOne(data []byte) (string, error) {
 	var sum int
-
-	switch os.Args[2] {
-	case "duplicate":
-		for _, passphrase := range bytes.Split(c, []byte("\n")) {
-			if Valid(string(passphrase)) {
-				sum++
-			}
+	for _, passphrase := range bytes.Split(data, []byte("\n")) {
+		if Valid(string(passphrase)) {
+			sum++
 		}
-	case "anagram":
-		for _, passphrase := range bytes.Split(c, []byte("\n")) {
-			if ValidEx(string(passphrase)) {
-				sum++
-			}
+	}
+	return strconv.Itoa(sum), nil
+}
+
+func (problem) PartTwo(data []byte) (string, error) {
+	var sum int
+	for _, passphrase := range bytes.Split(data, []byte("\n")) {
+		if ValidEx(string(passphrase)) {
+			sum++
 		}
-	default:
-		panic("unknown sub-command: " + os.Args[2])
 	}
-
-	if err != nil {
-		return err
-	}
-
-	_, err = fmt.Printf("%d\n", sum)
-
-	return err
+	return strconv.Itoa(sum), nil
 }

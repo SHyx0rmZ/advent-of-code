@@ -3,6 +3,9 @@ package day04
 import "strings"
 
 func Valid(p string) bool {
+	if p == "" {
+		return false
+	}
 	s := set{
 		M: make(map[string]struct{}),
 	}
@@ -16,6 +19,9 @@ func Valid(p string) bool {
 }
 
 func ValidEx(p string) bool {
+	if p == "" {
+		return false
+	}
 	s := set{
 		M: make(map[string]struct{}),
 	}

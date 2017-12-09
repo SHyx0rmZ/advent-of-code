@@ -1,40 +1,19 @@
 package day05
 
-import (
-	"bytes"
-	"fmt"
-	"os"
+import "strconv"
 
-	"github.com/SHyx0rmZ/advent-of-code/input"
-)
+type problem struct{}
 
-func Command() error {
-	if len(os.Args) < 4 {
-		panic("not enough arguments")
-	}
+func Problem() *problem {
+	return &problem{}
+}
 
-	c, err := input.ReadInput(os.Args[3])
-	if err != nil {
-		return err
-	}
-	c = bytes.TrimSpace(c)
+func (problem) PartOne(data []byte) (string, error) {
+	steps, err := JumpStrange(string(data))
+	return strconv.Itoa(steps), err
+}
 
-	var steps int
-
-	switch os.Args[2] {
-	case "strange":
-		steps, err = JumpStrange(string(c))
-	case "evenstranger":
-		steps, err = JumpEvenStranger(string(c))
-	default:
-		panic("unknown sub-command: " + os.Args[2])
-	}
-
-	if err != nil {
-		return err
-	}
-
-	_, err = fmt.Printf("%d\n", steps)
-
-	return err
+func (problem) PartTwo(data []byte) (string, error) {
+	steps, err := JumpEvenStranger(string(data))
+	return strconv.Itoa(steps), err
 }
