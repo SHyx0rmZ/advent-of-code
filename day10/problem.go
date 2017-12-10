@@ -3,7 +3,6 @@ package day10
 import (
 	"bytes"
 	"container/ring"
-	"errors"
 	"fmt"
 	"strconv"
 )
@@ -33,7 +32,7 @@ func Problem(n int) *problem {
 }
 
 func (p problem) PartOne(data []byte) (string, error) {
-	lengths, err := p.parse(data)
+	lengths, err := p.parseInts(data)
 	if err != nil {
 		return "", err
 	}
@@ -41,11 +40,31 @@ func (p problem) PartOne(data []byte) (string, error) {
 	return fmt.Sprintf("%d", p.state.First.Value.(int)*p.state.First.Next().Value.(int)), nil
 }
 
-func (problem) PartTwo(data []byte) (string, error) {
-	return "", errors.New("not implemented yet")
+func (p problem) PartTwo(data []byte) (string, error) {
+	lengths, err := p.parseBytes(data)
+	if err != nil {
+		return "", err
+	}
+	lengths = append(lengths, 17, 31, 73, 47, 23)
+	for i := 0; i < 64; i++ {
+		p.state.round(lengths)
+	}
+	var hash string
+	for _, x := range p.state.dense() {
+		hash += fmt.Sprintf("%02x", x)
+	}
+	return hash, nil
 }
 
-func (problem) parse(data []byte) ([]int, error) {
+func (problem) parseBytes(data []byte) ([]int, error) {
+	var lengths []int
+	for _, b := range bytes.TrimSpace(data) {
+		lengths = append(lengths, int(b))
+	}
+	return lengths, nil
+}
+
+func (problem) parseInts(data []byte) ([]int, error) {
 	var lengths []int
 	for _, b := range bytes.Split(data, []byte(",")) {
 		l, err := strconv.Atoi(string(bytes.TrimSpace(b)))
@@ -77,4 +96,14 @@ func (s *state) round(lengths []int) {
 		s.List = s.List.Advance(l + s.skip)
 		s.skip++
 	}
+}
+
+func (s *state) dense() []int {
+	v := make([]int, (s.First.Len()+(16-s.First.Len()%16)%16)/16)
+	r := s.First
+	for i := 0; i < s.First.Len(); i++ {
+		v[i/16] ^= r.Value.(int)
+		r = r.Next()
+	}
+	return v
 }

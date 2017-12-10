@@ -12,3 +12,10 @@ func TestProblem_PartOne(t *testing.T) {
 		t.Errorf("got (%s, %+v), want (%s, %+v)", r, err, "12", nil)
 	}
 }
+
+func TestProblem_PartTwo(t *testing.T) {
+	r, err := day10.Problem(5).PartTwo([]byte("3,4,1,5"))
+	if r != "04" || err != nil {
+		t.Errorf("got (%s, %+v), want (%s, %+v)", r, err, "04", nil)
+	}
+}
