@@ -12,6 +12,7 @@ type machine struct {
 	err     chan error
 	score   int
 	current int
+	ignored int
 }
 
 func Machine() *machine {
@@ -22,21 +23,29 @@ func Machine() *machine {
 	return m
 }
 
-func (m *machine) Run(data []byte) (int, error) {
+func (m machine) Ignored() int {
+	return m.ignored
+}
+
+func (m *machine) Run(data []byte) error {
 	for {
 		data, m.F = m.F(data)
 		if m.F == nil {
 			select {
 			case err := <-m.err:
-				return 0, err
+				return err
 			default:
 				if data == nil {
-					return m.score, nil
+					return nil
 				}
-				return 0, errors.New("still have data left")
+				return errors.New("still have data left")
 			}
 		}
 	}
+}
+
+func (m machine) Score() int {
+	return m.score
 }
 
 func (m *machine) errorf(format string, a ...interface{}) stateFn {
@@ -55,6 +64,7 @@ func (m *machine) garbage(data []byte) ([]byte, stateFn) {
 		case '>':
 			return data[1:], m.group
 		default:
+			m.ignored++
 			data = data[1:]
 		}
 	}

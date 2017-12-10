@@ -60,3 +60,52 @@ func TestProblem_PartOne8(t *testing.T) {
 		t.Errorf("got (%s, %+v), want (%s, %+v)", r, err, "3", nil)
 	}
 }
+
+func TestProblem_PartTwo1(t *testing.T) {
+	r, err := day09.Problem().PartTwo([]byte("<>"))
+	if r != "0" || err != nil {
+		t.Errorf("got (%s, %+v), want (%s, %+v)", r, err, "0", nil)
+	}
+}
+
+func TestProblem_PartTwo2(t *testing.T) {
+	r, err := day09.Problem().PartTwo([]byte("<random characters>"))
+	if r != "17" || err != nil {
+		t.Errorf("got (%s, %+v), want (%s, %+v)", r, err, "17", nil)
+	}
+}
+
+func TestProblem_PartTwo3(t *testing.T) {
+	r, err := day09.Problem().PartTwo([]byte("<<<<>"))
+	if r != "3" || err != nil {
+		t.Errorf("got (%s, %+v), want (%s, %+v)", r, err, "3", nil)
+	}
+}
+
+func TestProblem_PartTwo4(t *testing.T) {
+	r, err := day09.Problem().PartTwo([]byte("<{!>}>"))
+	if r != "2" || err != nil {
+		t.Errorf("got (%s, %+v), want (%s, %+v)", r, err, "2	", nil)
+	}
+}
+
+func TestProblem_PartTwo5(t *testing.T) {
+	r, err := day09.Problem().PartTwo([]byte("<!!>"))
+	if r != "0" || err != nil {
+		t.Errorf("got (%s, %+v), want (%s, %+v)", r, err, "0", nil)
+	}
+}
+
+func TestProblem_PartTwo6(t *testing.T) {
+	r, err := day09.Problem().PartTwo([]byte("<!!!>>"))
+	if r != "0" || err != nil {
+		t.Errorf("got (%s, %+v), want (%s, %+v)", r, err, "0", nil)
+	}
+}
+
+func TestProblem_PartTwo7(t *testing.T) {
+	r, err := day09.Problem().PartTwo([]byte(`<{o"i!a,<{i<a>`))
+	if r != "10" || err != nil {
+		t.Errorf("got (%s, %+v), want (%s, %+v)", r, err, "10", nil)
+	}
+}

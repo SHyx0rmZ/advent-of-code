@@ -1,9 +1,6 @@
 package day09
 
-import (
-	"errors"
-	"strconv"
-)
+import "strconv"
 
 type problem struct{}
 
@@ -13,10 +10,12 @@ func Problem() *problem {
 
 func (problem) PartOne(data []byte) (string, error) {
 	m := Machine()
-	score, err := m.Run(data)
-	return strconv.Itoa(score), err
+	err := m.Run(data)
+	return strconv.Itoa(m.Score()), err
 }
 
 func (problem) PartTwo(data []byte) (string, error) {
-	return "", errors.New("not yet implemented")
+	m := Machine()
+	err := m.Run(data)
+	return strconv.Itoa(m.Ignored()), err
 }
