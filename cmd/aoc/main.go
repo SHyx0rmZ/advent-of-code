@@ -20,6 +20,7 @@ import (
 	"github.com/SHyx0rmZ/advent-of-code/day11"
 	"github.com/SHyx0rmZ/advent-of-code/day12"
 	"github.com/SHyx0rmZ/advent-of-code/day13"
+	"github.com/SHyx0rmZ/advent-of-code/day14"
 	"github.com/SHyx0rmZ/advent-of-code/day15"
 	"github.com/SHyx0rmZ/advent-of-code/input"
 )
@@ -38,7 +39,7 @@ var problems = []aoc.Problem{
 	day11.Problem(),
 	day12.Problem(),
 	day13.Problem(),
-	nil,
+	day14.Problem(),
 	day15.Problem(591, 393),
 }
 
