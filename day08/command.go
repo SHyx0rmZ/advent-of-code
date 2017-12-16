@@ -1,37 +1,24 @@
 package day08
 
-import "strconv"
+import (
+	"bytes"
+	"fmt"
+	"go/constant"
+	"go/token"
+)
 
 var (
-	regs  = make(map[string]int)
-	conds = map[string]func(string, int) bool{
-		">": func(r string, n int) bool {
-			return regs[r] > n
-		},
-		"<": func(r string, n int) bool {
-			return regs[r] < n
-		},
-		">=": func(r string, n int) bool {
-			return regs[r] >= n
-		},
-		"<=": func(r string, n int) bool {
-			return regs[r] <= n
-		},
-		"==": func(r string, n int) bool {
-			return regs[r] == n
-		},
-		"!=": func(r string, n int) bool {
-			return regs[r] != n
-		},
+	conds = map[constant.Value]token.Token{
+		constant.MakeString(">"):  token.GTR,
+		constant.MakeString("<"):  token.LSS,
+		constant.MakeString(">="): token.GEQ,
+		constant.MakeString("<="): token.LEQ,
+		constant.MakeString("=="): token.EQL,
+		constant.MakeString("!="): token.NEQ,
 	}
-
-	ops = map[string]func(string, int){
-		"inc": func(r string, n int) {
-			regs[r] += n
-		},
-		"dec": func(r string, n int) {
-			regs[r] -= n
-		},
+	ops = map[constant.Value]token.Token{
+		constant.MakeString("inc"): token.ADD,
+		constant.MakeString("dec"): token.SUB,
 	}
 )
 
@@ -42,108 +29,60 @@ func Problem() *problem {
 }
 
 func (p problem) PartOne(data []byte) (string, error) {
-	commands, err := p.parse(data)
+	prog, err := p.parse(data)
 	if err != nil {
 		return "", err
 	}
-	for _, c := range commands {
-		if conds[c.Cond.Op](c.Cond.Reg, c.Cond.N) {
-			ops[c.Do.Op](c.Do.Reg, c.Do.N)
+	c := CPU()
+	c.Run(prog)
+	var l int64
+	for _, r := range c.Registers() {
+		n, ok := constant.Int64Val(r)
+		if !ok {
+			panic("not an int64")
 		}
-	}
-	var l int
-	for _, n := range regs {
 		if n > l {
 			l = n
 		}
 	}
-	return strconv.Itoa(l), nil
+	return fmt.Sprintf("%d", l), nil
 }
 
 func (p problem) PartTwo(data []byte) (string, error) {
-	commands, err := p.parse(data)
+	prog, err := p.parse(data)
 	if err != nil {
 		return "", err
 	}
-	var l int
-	for _, c := range commands {
-		if conds[c.Cond.Op](c.Cond.Reg, c.Cond.N) {
-			ops[c.Do.Op](c.Do.Reg, c.Do.N)
+	var l int64
+	c := CPU()
+	c.SingleStep(prog, func(r constant.Value) {
+		n, ok := constant.Int64Val(r)
+		if !ok {
+			panic("not an int64")
 		}
-		for _, n := range regs {
-			if n > l {
-				l = n
-			}
+		if n > l {
+			l = n
 		}
+	})
+	return fmt.Sprintf("%d", l), nil
+}
+
+func (problem) parse(data []byte) (program, error) {
+	var p program
+	for _, line := range bytes.Split(data, []byte("\n")) {
+		if len(line) == 0 {
+			continue
+		}
+
+		parts := bytes.Split(line, []byte(" "))
+
+		p = append(p, struct {
+			Instruction instruction
+			Condition   instruction
+		}{
+			Instruction: Instruction(parts[0], parts[1], parts[2], ops),
+			Condition:   Instruction(parts[4], parts[5], parts[6], conds),
+		})
 	}
-	return strconv.Itoa(l), nil
-}
-
-func (problem) parse(data []byte) ([]command, error) {
-	var s int
-	var e int
-	var err error
-
-	var commands []command
-
-	for s < len(data)-1 {
-		o := command{}
-
-		for data[e] != ' ' {
-			e++
-		}
-		o.Do.Reg = string(data[s:e])
-		e++
-		s = e
-		for data[e] != ' ' {
-			e++
-		}
-		o.Do.Op = string(data[s:e])
-		e++
-		s = e
-		for data[e] != ' ' {
-			e++
-		}
-		o.Do.N, err = strconv.Atoi(string(data[s:e]))
-		if err != nil {
-			return nil, err
-		}
-		e++
-		for data[e] != ' ' {
-			e++
-		}
-		e++
-		s = e
-		for data[e] != ' ' {
-			e++
-		}
-		o.Cond.Reg = string(data[s:e])
-		e++
-		s = e
-		for data[e] != ' ' {
-			e++
-		}
-		o.Cond.Op = string(data[s:e])
-		e++
-		s = e
-		for data[e] != '\n' {
-			e++
-		}
-		o.Cond.N, err = strconv.Atoi(string(data[s:e]))
-		e++
-		s = e
-		commands = append(commands, o)
-	}
-	return commands, nil
-}
-
-type group struct {
-	Reg string
-	Op  string
-	N   int
-}
-
-type command struct {
-	Do   group
-	Cond group
+	return p, nil
 }
