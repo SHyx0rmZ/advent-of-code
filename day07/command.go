@@ -3,6 +3,7 @@ package day07
 import (
 	"errors"
 	"fmt"
+	"github.com/SHyx0rmZ/advent-of-code/lib"
 	"math"
 	"strconv"
 	"strings"
@@ -19,21 +20,19 @@ func (p problem) PartOne(data []byte) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	sp := set{
-		M: make(map[string]struct{}),
-	}
+	sp := lib.Set()
 	for _, p := range ps {
 		sp.Add(p.Name)
 	}
 	for _, p := range ps {
 		for _, s := range p.Supports {
-			sp.Del(s)
+			sp.Delete(s)
 		}
 	}
 	if len(sp.Elements()) != 1 {
 		return "", errors.New("invalid tree")
 	}
-	return sp.Elements()[0], nil
+	return sp.Elements()[0].(string), nil
 }
 
 func (p problem) PartTwo(data []byte) (string, error) {
@@ -41,21 +40,19 @@ func (p problem) PartTwo(data []byte) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	sp := set{
-		M: make(map[string]struct{}),
-	}
+	sp := lib.Set()
 	for _, p := range ps {
 		sp.Add(p.Name)
 	}
 	for _, p := range ps {
 		for _, s := range p.Supports {
-			sp.Del(s)
+			sp.Delete(s)
 		}
 	}
 	if len(sp.Elements()) != 1 {
 		return "", errors.New("invalid tree")
 	}
-	r := ps[sp.Elements()[0]]
+	r := ps[sp.Elements()[0].(string)]
 	pr := r
 	cc := 4
 	d := 0.0

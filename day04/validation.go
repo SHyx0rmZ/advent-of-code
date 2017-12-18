@@ -1,14 +1,16 @@
 package day04
 
-import "strings"
+import (
+	"strings"
+
+	"github.com/SHyx0rmZ/advent-of-code/lib"
+)
 
 func Valid(p string) bool {
 	if p == "" {
 		return false
 	}
-	s := set{
-		M: make(map[string]struct{}),
-	}
+	s := lib.Set()
 	for _, word := range strings.Split(p, " ") {
 		if s.Contains(word) {
 			return false
@@ -22,9 +24,7 @@ func ValidEx(p string) bool {
 	if p == "" {
 		return false
 	}
-	s := set{
-		M: make(map[string]struct{}),
-	}
+	s := lib.Set()
 	for _, word := range strings.Split(p, " ") {
 		h := hash{
 			M: make(map[rune]int),
