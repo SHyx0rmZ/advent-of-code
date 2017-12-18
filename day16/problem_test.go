@@ -1,9 +1,9 @@
 package day16_test
 
 import (
-	"testing"
 	"io/ioutil"
 	"path/filepath"
+	"testing"
 
 	"github.com/SHyx0rmZ/advent-of-code/day16"
 )

@@ -3,8 +3,8 @@ package day16
 import "fmt"
 
 type program struct {
-	data [16]byte
-	cache [16]int
+	data   [16]byte
+	cache  [16]int
 	offset int
 }
 
@@ -30,8 +30,8 @@ func (p *program) Exchange(a, b int) {
 }
 
 func (p *program) Partner(a, b rune) {
-	ao := a-'a'
-	bo := b-'a'
+	ao := a - 'a'
+	bo := b - 'a'
 	pa := p.cache[ao]
 	pb := p.cache[bo]
 	p.data[pa], p.data[pb] = p.data[pb], p.data[pa]
@@ -45,7 +45,7 @@ func (p *program) Spin(x int) {
 func (p *program) String() string {
 	s := "["
 	for i := 0; i < 16; i++ {
-		s += fmt.Sprintf("%c", p.data[(i + p.offset)%16])
+		s += fmt.Sprintf("%c", p.data[(i+p.offset)%16])
 	}
 	return s + "]"
 }
