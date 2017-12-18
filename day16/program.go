@@ -25,21 +25,21 @@ func (p *program) Exchange(a, b int) {
 	bb := p.data[bm]
 	p.data[bm] = ba
 	p.data[am] = bb
-	p.cache[ba-'a'] = bm
-	p.cache[bb-'a'] = am
+	p.cache[(ba-'a') & 0xf] = bm
+	p.cache[(bb-'a') & 0xf] = am
 }
 
 func (p *program) Partner(a, b rune) {
-	ao := a - 'a'
-	bo := b - 'a'
-	pa := p.cache[ao]
-	pb := p.cache[bo]
+	ao := (a - 'a') & 0xf
+	bo := (b - 'a') & 0xf
+	pa := p.cache[ao] & 0xf
+	pb := p.cache[bo] & 0xf
 	p.data[pa], p.data[pb] = p.data[pb], p.data[pa]
 	p.cache[ao], p.cache[bo] = p.cache[bo], p.cache[ao]
 }
 
 func (p *program) Spin(x int) {
-	p.offset = (p.offset + 16 - x) & 0xf
+	p.offset = (p.offset - x) & 0xf
 }
 
 func (p *program) String() string {

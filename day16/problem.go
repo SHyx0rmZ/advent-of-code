@@ -15,8 +15,16 @@ func Problem() *problem {
 }
 
 func (p problem) Dance(pr *program, moves []Move) {
-	for _, move := range moves {
-		move.Apply(pr)
+	n := len(moves)
+	for i := 0; i < n; i++ {
+		switch m := moves[i].(type) {
+		case Spin:
+			pr.Spin(m.X)
+		case Exchange:
+			pr.Exchange(m.A, m.B)
+		case Partner:
+			pr.Partner(m.A, m.B)
+		}
 	}
 }
 
