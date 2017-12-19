@@ -17,12 +17,13 @@ func Problem() *problem {
 func (p problem) Dance(pr *program, moves []Move) {
 	n := len(moves)
 	for i := 0; i < n; i++ {
-		switch m := moves[i].(type) {
-		case Spin:
-			pr.Spin(m.X)
-		case Exchange:
+		m := moves[i]
+		switch {
+		case m.S:
+			pr.Spin(m.A, m.B)
+		case m.E:
 			pr.Exchange(m.A, m.B)
-		case Partner:
+		default:
 			pr.Partner(m.A, m.B)
 		}
 	}
@@ -76,7 +77,7 @@ func (problem) Parse(data []byte) ([]Move, error) {
 			if err != nil {
 				return nil, err
 			}
-			moves = append(moves, Spin{X: x})
+			moves = append(moves, Move{S: true, A: x})
 		case 'x':
 			a, err := strconv.Atoi(string(ps[0]))
 			if err != nil {
@@ -86,9 +87,9 @@ func (problem) Parse(data []byte) ([]Move, error) {
 			if err != nil {
 				return nil, err
 			}
-			moves = append(moves, Exchange{A: a, B: b})
+			moves = append(moves, Move{E: true, A: a, B: b})
 		case 'p':
-			moves = append(moves, Partner{A: rune(ps[0][0]), B: rune(ps[1][0])})
+			moves = append(moves, Move{A: int(ps[0][0] - 'a'), B: int(ps[1][0] - 'a')})
 		default:
 			panic("unknown dance move")
 		}
