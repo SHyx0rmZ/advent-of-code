@@ -26,41 +26,53 @@ func init() {
 	movesExchange = make([]day16.Move, 0)
 	movesPartner = make([]day16.Move, 0)
 	for _, move := range moves {
-		switch m := move.(type) {
-		case day16.Spin:
-			movesSpin = append(movesSpin, m)
-		case day16.Exchange:
-			movesExchange = append(movesExchange, m)
-		case day16.Partner:
-			movesPartner = append(movesPartner, m)
+		switch {
+		case move.S:
+			movesSpin = append(movesSpin, move)
+		case move.E:
+			movesExchange = append(movesExchange, move)
+		default:
+			movesPartner = append(movesPartner, move)
 		}
 	}
 }
 
 func BenchmarkProblem_Dance(b *testing.B) {
 	pr := day16.Program()
-	for i := 0; i < b.N; i++ {
-		day16.Problem().Dance(pr, moves)
+	p := day16.Problem()
+	n := b.N
+	b.ResetTimer()
+	for i := 0; i < n; i++ {
+		p.Dance(pr, moves)
 	}
 }
 
 func BenchmarkProblem_DanceSpin(b *testing.B) {
 	pr := day16.Program()
-	for i := 0; i < b.N; i++ {
-		day16.Problem().Dance(pr, movesSpin)
+	p := day16.Problem()
+	n := b.N
+	b.ResetTimer()
+	for i := 0; i < n; i++ {
+		p.Dance(pr, movesSpin)
 	}
 }
 
 func BenchmarkProblem_DanceExchange(b *testing.B) {
 	pr := day16.Program()
-	for i := 0; i < b.N; i++ {
-		day16.Problem().Dance(pr, movesExchange)
+	p := day16.Problem()
+	n := b.N
+	b.ResetTimer()
+	for i := 0; i < n; i++ {
+		p.Dance(pr, movesExchange)
 	}
 }
 
 func BenchmarkProblem_DancePartner(b *testing.B) {
 	pr := day16.Program()
-	for i := 0; i < b.N; i++ {
-		day16.Problem().Dance(pr, movesPartner)
+	p := day16.Problem()
+	n := b.N
+	b.ResetTimer()
+	for i := 0; i < n; i++ {
+		p.Dance(pr, movesPartner)
 	}
 }
