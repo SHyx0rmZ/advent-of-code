@@ -61,24 +61,50 @@ func main() {
 	}
 	problem--
 
-	data, err := input.ReadInput(os.Args[3])
-	if err != nil {
-		panic(err)
-	}
+	p := problems[problem]
 
 	var answer string
 
-	switch os.Args[2] {
-	case "a":
-		answer, err = problems[problem].PartOne(data)
-	case "b":
-		answer, err = problems[problem].PartTwo(data)
-	default:
-		panic("expect either 'a' or 'b'")
+	if rap, ok := p.(aoc.ReaderAwareProblem); ok {
+		answer, err = solveReaderAwareProblem(rap)
+	} else {
+		answer, err = solveProblem(p)
 	}
+
 	if err != nil {
 		panic(err)
 	}
 
 	fmt.Fprintf(os.Stdout, "%s\n", answer)
+}
+
+func solveProblem(problem aoc.Problem) (string, error) {
+	data, err := input.ReadInput(os.Args[3])
+	if err != nil {
+		panic(err)
+	}
+
+	switch os.Args[2] {
+	case "a":
+		return problem.PartOne(data)
+	case "b":
+		return problem.PartTwo(data)
+	}
+	panic("expect either 'a' or 'b'")
+}
+
+func solveReaderAwareProblem(problem aoc.ReaderAwareProblem) (string, error) {
+	r, err := input.OpenInputFile(os.Args[3])
+	if err != nil {
+		panic(err)
+	}
+	defer r.Close()
+
+	switch os.Args[2] {
+	case "a":
+		return problem.PartOneWithReader(r)
+	case "b":
+		return problem.PartTwoWithReader(r)
+	}
+	panic("expect either 'a' or 'b'")
 }
