@@ -6,7 +6,7 @@ TEXT ·programSpin(SB), 2, $24-24
     MOVOU X0, 0(AX)
     RET
 
-TEXT ·programPartner(SB), 3, $16-32
+TEXT ·programPartner(SB), 3, $32-32
     MOVB a+8(FP), AL
     MOVB b+9(FP), BL
     MOVQ data+0(FP), CX
