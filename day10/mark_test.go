@@ -160,7 +160,7 @@ func TestMark_Next(t *testing.T) {
 				marks[i].PtrPrev = &marks[mark.Prev]
 			}
 			mark := marks[test.Mark]
-			next := mark.Next()
+			next := mark.PtrNext // todo: iter
 			if next != &marks[test.Next] {
 				t.Errorf("got %p, want %p", next, &marks[test.Next])
 			}

@@ -11,8 +11,12 @@ type Mark struct {
 	PtrPrev *Mark
 
 	//
-	DirForward  Direction
-	DirBackward Direction
+	TNFS            bool
+	TNFE            bool
+	TNBS            bool
+	TNBE            bool
+	ToggleBackward  bool
+	ToggleBackward2 bool
 }
 
 func NewMarks(n int) []Mark {
@@ -31,12 +35,4 @@ func NewMarks(n int) []Mark {
 		marks[0].PtrPrev = &marks[n-1]
 	}
 	return marks
-}
-
-func (m *Mark) Next() *Mark {
-	return m.DirBackward.Next(m)
-}
-
-func (m *Mark) Prev() *Mark {
-	return m.DirBackward.Prev(m)
 }

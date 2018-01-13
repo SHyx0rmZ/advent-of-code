@@ -11,15 +11,24 @@ func (c *Circle) SelectEnds(length int) (*Mark, *Mark) {
 }
 
 func (c *Circle) TwistEnds(start *Mark, end *Mark) {
-	for start != end {
-		start.Value, end.Value = end.Value, start.Value
+	//for start != end {
+	//	start.Value, end.Value = end.Value, start.Value
+	//
+	//	start = start.Next()
+	//	if start == end {
+	//		break
+	//	}
+	//	end = end.Prev()
+	//}
 
-		start = start.Next()
-		if start == end {
-			break
-		}
-		end = end.Prev()
-	}
+	//p, n := start.Prev(), end.Next()
+	//p.PtrNext, end.PtrNext, n.PtrPrev, start.PtrPrev = end.PtrNext, p.PtrNext, start.PtrPrev, n.PtrPrev
+	//p.PtrNext, n.PtrPrev = n.PtrPrev, p.PtrNext
+	//p.PtrNext, n.PtrPrev = end, start
+	//end.DirBackward.Toggle()
+	//end.DirForward.Toggle()
+	//start.DirBackward.Toggle()
+	//start.DirForward.Toggle()
 }
 
 func (c *Circle) Round(lengths []int) {

@@ -4,13 +4,13 @@ import "container/ring"
 
 type Ring ring.Ring
 
-func NewRing(n int) *Ring {
+func NewRing(n int) *ring.Ring {
 	r := ring.New(n)
 	for i := 0; i < n; i++ {
 		r.Value = i
 		r = r.Next()
 	}
-	return (*Ring)(r)
+	return r
 }
 
 func (r *Ring) Advance(n int) *Ring {

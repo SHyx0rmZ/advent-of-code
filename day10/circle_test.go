@@ -1,8 +1,9 @@
 package day10_test
 
 import (
-	"github.com/SHyx0rmZ/advent-of-code/day10"
 	"testing"
+
+	"github.com/SHyx0rmZ/advent-of-code/day10"
 )
 
 func TestCircle_SelectEnds(t *testing.T) {
@@ -87,13 +88,79 @@ func TestCircle_TwistEnds(t *testing.T) {
 			}
 			c.TwistEnds(&c.Marks[test.Start], &c.Marks[test.End])
 			m := &c.Marks[len(c.Marks)-1]
+			it := day10.Iter{
+				Direction: day10.Forward,
+			}
 			for i := 0; i < len(test.Values); i++ {
-				m = m.Next()
+				m = it.Next(m)
 				if m.Value != test.Values[i] {
 					t.Fatalf("Values[%d]: got %d, want %d", i, m.Value, test.Values[i])
 				}
 			}
 		})
+	}
+}
+
+func TestCircle_TwistEnds2(t *testing.T) {
+	c := day10.Circle{
+		Marks: day10.NewMarks(7),
+	}
+	c.TwistEnds(&c.Marks[1], &c.Marks[4])
+	vars := []struct {
+		Actual, Expected *day10.Mark
+	}{
+		{c.Marks[0].PtrNext, &c.Marks[4]}, // 0
+		{c.Marks[1].PtrNext, &c.Marks[2]},
+		{c.Marks[2].PtrNext, &c.Marks[3]},
+		{c.Marks[3].PtrNext, &c.Marks[4]},
+		{c.Marks[4].PtrNext, &c.Marks[5]}, // 4
+		{c.Marks[5].PtrNext, &c.Marks[6]},
+		{c.Marks[6].PtrNext, &c.Marks[0]},
+		{c.Marks[0].PtrPrev, &c.Marks[6]},
+		{c.Marks[1].PtrPrev, &c.Marks[0]}, // 8
+		{c.Marks[2].PtrPrev, &c.Marks[1]},
+		{c.Marks[3].PtrPrev, &c.Marks[2]},
+		{c.Marks[4].PtrPrev, &c.Marks[3]},
+		{c.Marks[5].PtrPrev, &c.Marks[1]}, // 12
+		{c.Marks[6].PtrPrev, &c.Marks[5]},
+		//{c.Marks[0].Next(), &c.Marks[4]},
+		//{c.Marks[1].Next(), &c.Marks[5]},
+		//{c.Marks[2].Next(), &c.Marks[1]}, // 16
+		//{c.Marks[3].Next(), &c.Marks[2]},
+		//{c.Marks[4].Next(), &c.Marks[3]},
+		//{c.Marks[5].Next(), &c.Marks[6]},
+		//{c.Marks[6].Next(), &c.Marks[0]}, // 20
+		//{c.Marks[0].Prev(), &c.Marks[6]},
+		//{c.Marks[1].Prev(), &c.Marks[2]},
+		//{c.Marks[2].Prev(), &c.Marks[3]},
+		//{c.Marks[3].Prev(), &c.Marks[4]}, // 24
+		//{c.Marks[4].Prev(), &c.Marks[0]},
+		//{c.Marks[5].Prev(), &c.Marks[1]},
+		//{c.Marks[6].Prev(), &c.Marks[5]},
+	}
+	for i, v := range vars {
+		if v.Actual != v.Expected {
+			t.Errorf("%d: got %p, want %p", i, v.Actual, v.Expected)
+		}
+	}
+	vals := []struct {
+		F func(*day10.Iter, *day10.Mark) *day10.Mark
+		V []int
+	}{
+		{(*day10.Iter).Next, []int{0, 4, 3, 2, 1, 5, 6, 0}},
+		{(*day10.Iter).Prev, []int{0, 6, 5, 1, 2, 3, 4, 0}},
+	}
+	for i, v := range vals {
+		m := &c.Marks[0]
+		it := &day10.Iter{
+			Direction: day10.Forward,
+		}
+		for j := 0; j < len(v.V); j++ {
+			if m.Value != v.V[j] {
+				t.Errorf("%d: Values[%d]: got %d, want %d", i, j, m.Value, v.V[j])
+			}
+			m = v.F(it, m)
+		}
 	}
 }
 
