@@ -86,16 +86,19 @@ func TestCircle_TwistEnds(t *testing.T) {
 			c := day10.Circle{
 				Marks: day10.NewMarks(len(test.Values)),
 			}
-			c.TwistEnds(&c.Marks[test.Start], &c.Marks[test.End])
-			m := &c.Marks[len(c.Marks)-1]
+			c.TwistEnds(&c.Marks[test.Start], &c.Marks[test.End], test.End-test.Start+1)
+			m := &c.Marks[2]
 			it := day10.Iter{
 				Direction: day10.Forward,
 			}
+			//ctr := day10.Counter(3)
+			//go ctr.Run()
+			//it.Set.Add(ctr)
 			for i := 0; i < len(test.Values); i++ {
-				m = it.Next(m)
 				if m.Value != test.Values[i] {
 					t.Fatalf("Values[%d]: got %d, want %d", i, m.Value, test.Values[i])
 				}
+				m = it.Next(m)
 			}
 		})
 	}
@@ -105,38 +108,24 @@ func TestCircle_TwistEnds2(t *testing.T) {
 	c := day10.Circle{
 		Marks: day10.NewMarks(7),
 	}
-	c.TwistEnds(&c.Marks[1], &c.Marks[4])
+	c.TwistEnds(&c.Marks[1], &c.Marks[4], 4)
 	vars := []struct {
 		Actual, Expected *day10.Mark
 	}{
-		{c.Marks[0].PtrNext, &c.Marks[4]}, // 0
-		{c.Marks[1].PtrNext, &c.Marks[2]},
-		{c.Marks[2].PtrNext, &c.Marks[3]},
-		{c.Marks[3].PtrNext, &c.Marks[4]},
-		{c.Marks[4].PtrNext, &c.Marks[5]}, // 4
-		{c.Marks[5].PtrNext, &c.Marks[6]},
-		{c.Marks[6].PtrNext, &c.Marks[0]},
-		{c.Marks[0].PtrPrev, &c.Marks[6]},
-		{c.Marks[1].PtrPrev, &c.Marks[0]}, // 8
-		{c.Marks[2].PtrPrev, &c.Marks[1]},
-		{c.Marks[3].PtrPrev, &c.Marks[2]},
-		{c.Marks[4].PtrPrev, &c.Marks[3]},
-		{c.Marks[5].PtrPrev, &c.Marks[1]}, // 12
-		{c.Marks[6].PtrPrev, &c.Marks[5]},
-		//{c.Marks[0].Next(), &c.Marks[4]},
-		//{c.Marks[1].Next(), &c.Marks[5]},
-		//{c.Marks[2].Next(), &c.Marks[1]}, // 16
-		//{c.Marks[3].Next(), &c.Marks[2]},
-		//{c.Marks[4].Next(), &c.Marks[3]},
-		//{c.Marks[5].Next(), &c.Marks[6]},
-		//{c.Marks[6].Next(), &c.Marks[0]}, // 20
-		//{c.Marks[0].Prev(), &c.Marks[6]},
-		//{c.Marks[1].Prev(), &c.Marks[2]},
-		//{c.Marks[2].Prev(), &c.Marks[3]},
-		//{c.Marks[3].Prev(), &c.Marks[4]}, // 24
-		//{c.Marks[4].Prev(), &c.Marks[0]},
-		//{c.Marks[5].Prev(), &c.Marks[1]},
-		//{c.Marks[6].Prev(), &c.Marks[5]},
+		{c.Marks[0].Next, &c.Marks[4]}, // 0
+		{c.Marks[1].Next, &c.Marks[2]},
+		{c.Marks[2].Next, &c.Marks[3]},
+		{c.Marks[3].Next, &c.Marks[4]},
+		{c.Marks[4].Next, &c.Marks[0]}, // 4
+		{c.Marks[5].Next, &c.Marks[6]},
+		{c.Marks[6].Next, &c.Marks[0]},
+		{c.Marks[0].Prev, &c.Marks[6]},
+		{c.Marks[1].Prev, &c.Marks[5]}, // 8
+		{c.Marks[2].Prev, &c.Marks[1]},
+		{c.Marks[3].Prev, &c.Marks[2]},
+		{c.Marks[4].Prev, &c.Marks[3]},
+		{c.Marks[5].Prev, &c.Marks[1]}, // 12
+		{c.Marks[6].Prev, &c.Marks[5]},
 	}
 	for i, v := range vars {
 		if v.Actual != v.Expected {
@@ -172,6 +161,6 @@ func BenchmarkCircle_TwistEnds(b *testing.B) {
 	}
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		c.TwistEnds(&c.Marks[0], &c.Marks[2499])
+		c.TwistEnds(&c.Marks[0], &c.Marks[2499], 2500)
 	}
 }

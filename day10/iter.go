@@ -1,41 +1,45 @@
 package day10
 
+import "github.com/SHyx0rmZ/advent-of-code/lib"
+
 type Iter struct {
 	Direction
+	Set lib.GenSet
+}
+
+func (i *Iter) enter(n int) {
+	i.Toggle()
+	c := &counter{
+		make(chan struct{}),
+		n - 1,
+	}
+	i.Set.Add(c)
+	go c.Run()
+}
+
+func (i *Iter) exit() {
+	for _, c := range i.Set.Elements() {
+		if c.(*counter).Done() {
+			i.Set.Delete(c)
+			i.Toggle()
+		}
+	}
 }
 
 func (i *Iter) Next(m *Mark) *Mark {
-	if i.enterNextToggle(m) {
-		i.Toggle()
+	if m.Fwd != 0 {
+		i.enter(m.Fwd)
 	}
 	m = i.Direction.Next(m)
-	if i.exitNextToggle(m) {
-		i.Toggle()
-	}
+	i.exit()
 	return m
 }
 
 func (i *Iter) Prev(m *Mark) *Mark {
-	if m.ToggleBackward {
-		i.Toggle()
+	if m.Bkwd != 0 {
+		i.enter(m.Bkwd)
 	}
 	m = i.Direction.Prev(m)
-	if m.ToggleBackward2 {
-		i.Toggle()
-	}
+	i.exit()
 	return m
-}
-
-func (i Iter) enterNextToggle(m *Mark) bool {
-	if i.Direction == Backward {
-		return m.TNBS
-	}
-	return m.TNFS
-}
-
-func (i Iter) exitNextToggle(m *Mark) bool {
-	if i.Direction == Backward {
-		return m.TNFE
-	}
-	return m.TNBE
 }

@@ -9,16 +9,16 @@ const (
 
 func (d Direction) Next(m *Mark) *Mark {
 	if d == Backward {
-		return m.PtrPrev
+		return m.Prev
 	}
-	return m.PtrNext
+	return m.Next
 }
 
 func (d Direction) Prev(m *Mark) *Mark {
 	if d == Backward {
-		return m.PtrNext
+		return m.Next
 	}
-	return m.PtrPrev
+	return m.Prev
 }
 
 func (d Direction) String() string {

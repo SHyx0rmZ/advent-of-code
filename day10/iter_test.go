@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/SHyx0rmZ/advent-of-code/day10"
+	"github.com/SHyx0rmZ/advent-of-code/lib"
 )
 
 func TestIter_Next(t *testing.T) {
@@ -12,6 +13,7 @@ func TestIter_Next(t *testing.T) {
 	tests := []struct {
 		Name  string
 		Dir   day10.Direction
+		Set   func() lib.GenSet
 		Start int
 		Vals  []int
 	}{
@@ -22,23 +24,37 @@ func TestIter_Next(t *testing.T) {
 			Vals:  []int{0, 4, 3, 2, 1, 5, 6, 0},
 		},
 		{
-			Name:  "Backward0",
-			Dir:   day10.Backward,
-			Start: 0,
-			Vals:  []int{0, 6, 5, 1, 9, 3, 4, 0},
+			Name:  "Forward5",
+			Dir:   day10.Forward,
+			Start: 5,
+			Vals:  []int{5, 6, 0, 4, 3, 2, 1, 5},
 		},
 		//{
-		//	Name:  "Forward1",
-		//	Dir:   day10.Forward,
-		//	Start: 1,
-		//	Vals:  []int{0, 4, 3, 2, 1, 5, 6, 0},
+		//	Name:  "Backward0",
+		//	Dir:   day10.Backward,
+		//	Start: 0,
+		//	Vals:  []int{0, 6, 5, 1, 9, 3, 4, 0},
 		//},
-		{
-			Name:  "Backward1",
-			Dir:   day10.Backward,
-			Start: 1,
-			Vals:  []int{1, 5, 6, 0, 4, 3, 2, 1},
-		},
+		//{
+		//	Name:  "Backward1",
+		//	Dir:   day10.Backward,
+		//	Start: 1,
+		//	Vals:  []int{1, 5, 6, 0, 4, 3, 2, 1},
+		//	Set: func() lib.GenSet {
+		//		var set lib.GenSet
+		//		c := day10.Counter(2)
+		//		set.Add(c)
+		//		go c.Run()
+		//		return set
+		//	},
+		//},
+		//{
+		//
+		//	Name:  "Backward1",
+		//	Dir:   day10.Backward,
+		//	Start: 1,
+		//	Vals:  []int{1, 5, 6, 0, 4, 3, 2, 1},
+		//},
 	}
 
 	for _, test := range tests {
@@ -47,9 +63,12 @@ func TestIter_Next(t *testing.T) {
 			it := day10.Iter{
 				Direction: test.Dir,
 			}
+			if test.Set != nil {
+				it.Set = test.Set()
+			}
 			for i := 0; i < len(test.Vals); i++ {
 				if c.Value != test.Vals[i] {
-					t.Errorf("%s: Values[%d]: got %d, want %d", test.Name, i, c.Value, test.Vals[i])
+					t.Errorf("Values[%d]: got %d, want %d", i, c.Value, test.Vals[i])
 				}
 				c = it.Next(c)
 			}
@@ -66,12 +85,12 @@ func TestIter_Prev(t *testing.T) {
 		Start int
 		Vals  []int
 	}{
-		{
-			Name:  "Backward0",
-			Dir:   day10.Backward,
-			Start: 0,
-			Vals:  []int{0, 4, 3, 2, 1, 5, 6, 0},
-		},
+		//{
+		//	Name:  "Backward0",
+		//	Dir:   day10.Backward,
+		//	Start: 0,
+		//	Vals:  []int{0, 4, 3, 2, 1, 5, 6, 0},
+		//},
 		{
 			Name:  "Forward0",
 			Dir:   day10.Forward,

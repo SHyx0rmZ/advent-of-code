@@ -10,7 +10,7 @@ func (c *Circle) SelectEnds(length int) (*Mark, *Mark) {
 	return &c.Marks[c.Ptr], &c.Marks[(c.Ptr+length-1)%len(c.Marks)]
 }
 
-func (c *Circle) TwistEnds(start *Mark, end *Mark) {
+func (c *Circle) TwistEnds(start *Mark, end *Mark, l int) {
 	//for start != end {
 	//	start.Value, end.Value = end.Value, start.Value
 	//
@@ -21,21 +21,19 @@ func (c *Circle) TwistEnds(start *Mark, end *Mark) {
 	//	end = end.Prev()
 	//}
 
-	//p, n := start.Prev(), end.Next()
-	//p.PtrNext, end.PtrNext, n.PtrPrev, start.PtrPrev = end.PtrNext, p.PtrNext, start.PtrPrev, n.PtrPrev
-	//p.PtrNext, n.PtrPrev = n.PtrPrev, p.PtrNext
-	//p.PtrNext, n.PtrPrev = end, start
-	//end.DirBackward.Toggle()
-	//end.DirForward.Toggle()
-	//start.DirBackward.Toggle()
-	//start.DirForward.Toggle()
+	it := Iter{}
+	p, n := it.Prev(start), it.Next(end)
+	p.Next, n.Prev = end, start
+	start.Prev, end.Next = n, p
+	start.Bkwd = l
+	end.Fwd = l
 }
 
 func (c *Circle) Round(lengths []int) {
 	for _, length := range lengths {
 		//c.Marks[c.Ptr].Reverse(length)
 		start, end := c.SelectEnds(length)
-		c.TwistEnds(start, end)
+		c.TwistEnds(start, end, length)
 		c.Ptr = (c.Ptr + length + c.Skip) % len(c.Marks)
 		c.Skip++
 	}

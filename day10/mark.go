@@ -4,19 +4,15 @@ type Mark struct {
 	// Value stores an integer Value.
 	Value int
 
-	// PtrNext points to the next Mark in the list.
-	PtrNext *Mark
+	// Next points to the next Mark in the list.
+	Next *Mark
 
-	// PtrPrev points to the previous Mark in the list.
-	PtrPrev *Mark
+	// Prev points to the previous Mark in the list.
+	Prev *Mark
 
 	//
-	TNFS            bool
-	TNFE            bool
-	TNBS            bool
-	TNBE            bool
-	ToggleBackward  bool
-	ToggleBackward2 bool
+	Fwd  int
+	Bkwd int
 }
 
 func NewMarks(n int) []Mark {
@@ -27,12 +23,12 @@ func NewMarks(n int) []Mark {
 		})
 	}
 	for i := 0; i < n-1; i++ {
-		marks[i].PtrNext = &marks[i+1]
-		marks[i+1].PtrPrev = &marks[i]
+		marks[i].Next = &marks[i+1]
+		marks[i+1].Prev = &marks[i]
 	}
 	if marks != nil {
-		marks[n-1].PtrNext = &marks[0]
-		marks[0].PtrPrev = &marks[n-1]
+		marks[n-1].Next = &marks[0]
+		marks[0].Prev = &marks[n-1]
 	}
 	return marks
 }

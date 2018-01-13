@@ -2,6 +2,31 @@ package lib
 
 import "reflect"
 
+type GenSet struct {
+	*set
+}
+
+func (s *GenSet) Add(v interface{}) {
+	if s.set == nil {
+		s.set = Set()
+	}
+	s.set.Add(v)
+}
+
+func (s *GenSet) Elements() []interface{} {
+	if s.set == nil {
+		return nil
+	}
+	return s.set.Elements()
+}
+
+func (s *GenSet) Len() int {
+	if s.set == nil {
+		return 0
+	}
+	return s.set.Len()
+}
+
 type set struct {
 	m map[interface{}]struct{}
 	k reflect.Kind
@@ -38,7 +63,12 @@ func (s *set) Elements() []interface{} {
 	for e := range s.m {
 		es = append(es, e)
 	}
+	sort(es, s.k)
 	return es
+}
+
+func (s *set) Len() int {
+	return len(s.m)
 }
 
 /*

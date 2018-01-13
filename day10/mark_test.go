@@ -67,11 +67,11 @@ func TestNewMarks(t *testing.T) {
 				if marks[i].Value != test.Marks[i].Value {
 					t.Errorf("got Value of %d, want %d", marks[i].Value, test.Marks[i].Value)
 				}
-				if marks[i].PtrNext != &marks[test.Marks[i].Next] {
-					t.Errorf("got PtrNext of %p, want %p", marks[i].PtrNext, &marks[test.Marks[i].Next])
+				if marks[i].Next != &marks[test.Marks[i].Next] {
+					t.Errorf("got Next of %p, want %p", marks[i].Next, &marks[test.Marks[i].Next])
 				}
-				if marks[i].PtrPrev != &marks[test.Marks[i].Prev] {
-					t.Errorf("got PtrPrev of %p, want %p", marks[i].PtrPrev, &marks[test.Marks[i].Prev])
+				if marks[i].Prev != &marks[test.Marks[i].Prev] {
+					t.Errorf("got Prev of %p, want %p", marks[i].Prev, &marks[test.Marks[i].Prev])
 				}
 			}
 		})
@@ -156,11 +156,11 @@ func TestMark_Next(t *testing.T) {
 		t.Run(test.Name, func(t *testing.T) {
 			marks := day10.NewMarks(len(test.Marks))
 			for i, mark := range test.Marks {
-				marks[i].PtrNext = &marks[mark.Next]
-				marks[i].PtrPrev = &marks[mark.Prev]
+				marks[i].Next = &marks[mark.Next]
+				marks[i].Prev = &marks[mark.Prev]
 			}
 			mark := marks[test.Mark]
-			next := mark.PtrNext // todo: iter
+			next := mark.Next // todo: iter
 			if next != &marks[test.Next] {
 				t.Errorf("got %p, want %p", next, &marks[test.Next])
 			}
