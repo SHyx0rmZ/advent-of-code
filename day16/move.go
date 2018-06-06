@@ -1,8 +1,8 @@
 package day16
 
 type Move struct {
-	S bool
-	E bool
-	A int
-	B int
+	Spin     bool
+	Exchange bool
+	A        int
+	B        int
 }

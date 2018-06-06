@@ -27,9 +27,9 @@ func init() {
 	movesPartner = make([]day16.Move, 0)
 	for _, move := range moves {
 		switch {
-		//case move.S:
+		//case move.Spin:
 		//	movesSpin = append(movesSpin, move)
-		case move.E:
+		case move.Exchange:
 			movesExchange = append(movesExchange, move)
 		default:
 			movesPartner = append(movesPartner, move)

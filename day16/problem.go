@@ -24,13 +24,13 @@ func (p problem) Dance(pr *program, moves []Move) {
 	for i := 0; i < n; i++ {
 		m := moves[i]
 		switch {
-		//case m.S:
+		//case m.Spin:
 		//	pr.Spin(m.A, m.B)
-		//case m.E:
+		//case m.Exchange:
 		//	pr.Exchange(m.A, m.B)
 		//default:
 		//	pr.Partner(m.A, m.B)
-		case m.E:
+		case m.Exchange:
 			//pr.Exchange(m.A, m.B)
 			//pr.do(m.A, m.B, 0, 16)
 			ca := (*int)(unsafe.Pointer(&pr.data[0]))
@@ -48,7 +48,7 @@ func (p problem) Dance(pr *program, moves []Move) {
 			*ca = pb
 			*cb = pa
 			//programExchange(m.A, m.B, &pr.data)
-		case !m.S:
+		case !m.Spin:
 			ca := (*int)(unsafe.Pointer(&pr.data[16]))
 			cb := (*int)(unsafe.Pointer(&pr.data[16]))
 			ca = (*int)(unsafe.Pointer((uintptr)(unsafe.Pointer(ca)) + uintptr(m.A) * unsafe.Sizeof(int(0))))
@@ -77,18 +77,18 @@ func (p problem) Dance(pr *program, moves []Move) {
 //	for i := 0; i < n; i++ {
 //		m := moves[i]
 //		switch {
-//		//case m.S:
+//		//case m.Spin:
 //		//	pr.Spin(m.A, m.B)
-//		//case m.E:
+//		//case m.Exchange:
 //		//	pr.Exchange(m.A, m.B)
 //		//default:
 //		//	pr.Partner(m.A, m.B)
-//		case m.E:
+//		case m.Exchange:
 //			//pr.Exchange(m.A, m.B)
 //			//pr.do(m.A, m.B, 0, 16)
 //			c1 = 0
 //			c2 = 16
-//		case !m.S:
+//		case !m.Spin:
 //			c1 = 16
 //			c2 = 0
 //			//pr.Partner(m.A, m.B)
@@ -165,7 +165,7 @@ func (problem) Parse(data []byte) ([]Move, error) {
 			if err != nil {
 				return nil, err
 			}
-			//moves = append(moves, Move{S: true, A: x})
+			//moves = append(moves, Move{Spin: true, A: x})
 			offset = (offset - x) & 0xf
 		case 'x':
 			a, err := strconv.Atoi(string(ps[0]))
@@ -176,7 +176,7 @@ func (problem) Parse(data []byte) ([]Move, error) {
 			if err != nil {
 				return nil, err
 			}
-			m := Move{E: true, A: (a+offset)&0xf, B: (b+offset)&0xf}
+			m := Move{Exchange: true, A: (a+offset)&0xf, B: (b+offset)&0xf}
 			la, lb := last.A, last.B
 			ma, mb := m.A, m.B
 			switch {
@@ -214,13 +214,13 @@ func (problem) Parse(data []byte) ([]Move, error) {
 				last = &moves[len(moves) - 1]
 				lastI = len(moves) - 1
 			}
-			//moves = append(moves, Move{E: true, A: a, B: b})
+			//moves = append(moves, Move{Exchange: true, A: a, B: b})
 		case 'p':
 			moves = append(moves, Move{A: int(ps[0][0] - 'a'), B: int(ps[1][0] - 'a')})
 		default:
 			panic("unknown dance move")
 		}
 	}
-	moves = append(moves, Move{S: true, A: -offset})
+	moves = append(moves, Move{Spin: true, A: -offset})
 	return moves, nil
 }
