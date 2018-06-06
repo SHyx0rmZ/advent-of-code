@@ -2,7 +2,6 @@ package day14
 
 import (
 	"bytes"
-	"container/ring"
 	"fmt"
 	"math/bits"
 	"strconv"
@@ -32,12 +31,13 @@ func (p problem) PartOne(data []byte) (string, error) {
 	return fmt.Sprintf("%d", s), nil
 }
 
+type node struct {
+	bool
+	int
+}
+
 func (p problem) PartTwo(data []byte) (string, error) {
-	m := [128][128]struct {
-		bool
-		int
-		v bool
-	}{}
+	m := [128][128]node{}
 	for i := 0; i < 128; i++ {
 		hash, err := p.hash([]byte(fmt.Sprintf("%s-%d", string(bytes.TrimSpace(data)), i)))
 		if err != nil {
@@ -56,78 +56,29 @@ func (p problem) PartTwo(data []byte) (string, error) {
 	var i int
 	for y := 0; y < 128; y++ {
 		for x := 0; x < 128; x++ {
-			if m[y][x].bool == false {
-				continue
+			if m[x][y].bool && m[x][y].int == 0 {
+				i += 1
 			}
 			det(&i, &m, x, y)
 		}
 	}
-	for y := 0; y < 8; y++ {
-		for x := 0; x < 8; x++ {
-			fmt.Printf(" [%5t,%3d]", m[y][x].bool, m[y][x].int)
-		}
-		fmt.Println()
-	}
-	return fmt.Sprintf("%d", i-1), nil
+	return fmt.Sprintf("%d", i), nil
 }
 
 func (problem) parse(data []byte) ([]int, error) {
 	return nil, nil
 }
 
-func det(i *int, m *[128][128]struct {
-	bool
-	int
-	v bool
-}, x int, y int) int {
-	if m[x][y].int != 0 || m[x][y].v {
-		return m[x][y].int
-	}
-	if !m[x][y].bool {
-		return 0
-	}
-	m[x][y].v = true
-	var vl, vd, vr, vu int
-	if x > 0 {
-		vl = det(i, m, x-1, y)
-	}
-	if y > 0 {
-		vd = det(i, m, x, y-1)
-	}
-	if x < 127 {
-		vr = det(i, m, x+1, y)
-	}
-	if y < 127 {
-		vu = det(i, m, x, y+1)
-	}
-	switch {
-	case vl != 0:
-		m[x][y].int = vl
-	case vd != 0:
-		m[x][y].int = vd
-	case vr != 0:
-		m[x][y].int = vr
-	case vu != 0:
-		m[x][y].int = vu
-	default:
-		*i++
-		m[x][y].int = *i
-	}
-	return m[x][y].int
-}
+func det(i *int, m *[128][128]node, x, y int) {
+	if  m[x][y].int != 0 { return }
+	if !m[x][y].bool     { return }
 
-type state struct {
-	List  *Ring
-	First *Ring
-	skip  int
-}
+	m[x][y].int = *i
 
-func State(n int) *state {
-	r := NewRing(n)
-	return &state{
-		List:  r,
-		First: r,
-	}
+	if x > 0   { det(i, m, x-1, y) }
+	if y > 0   { det(i, m, x, y-1) }
+	if x < 127 { det(i, m, x+1, y) }
+	if y < 127 { det(i, m, x, y+1) }
 }
 
 func (p problem) hash(data []byte) (string, error) {
@@ -165,36 +116,4 @@ func (problem) parseInts(data []byte) ([]int, error) {
 		lengths = append(lengths, l)
 	}
 	return lengths, nil
-}
-
-func (s *state) reverse(n int) {
-	s.List = s.List.Prev()
-	r := (*Ring)((*ring.Ring)(s.List).Unlink(n))
-	var ns []int
-	for i := 0; i < n; i++ {
-		ns = append(ns, r.Advance(i).Value.(int))
-	}
-	for i := 0; i < n; i++ {
-		r.Advance(n - 1 - i).Value = ns[i]
-	}
-	(*ring.Ring)(s.List).Link((*ring.Ring)(r))
-	s.List = s.List.Next()
-}
-
-func (s *state) round(lengths []int) {
-	for _, l := range lengths {
-		s.reverse(l)
-		s.List = s.List.Advance(l + s.skip)
-		s.skip++
-	}
-}
-
-func (s *state) dense() []int {
-	v := make([]int, (s.First.Len()+(16-s.First.Len()%16)%16)/16)
-	r := s.First
-	for i := 0; i < s.First.Len(); i++ {
-		v[i/16] ^= r.Value.(int)
-		r = r.Next()
-	}
-	return v
 }
