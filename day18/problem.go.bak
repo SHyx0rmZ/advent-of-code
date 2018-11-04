@@ -1,0 +1,267 @@
+package day18
+
+import (
+	"bytes"
+	"fmt"
+	"strconv"
+	"sync"
+	"time"
+)
+
+type problem struct{}
+
+func Problem() *problem {
+	return &problem{}
+}
+
+type Ins interface {
+	Execute(c *CPU)
+}
+
+type Ins1 struct {
+	X byte
+}
+
+type Ins2 struct {
+	X  byte
+	Yr *byte
+	Yi *int
+}
+
+type CPU struct {
+	Register map[byte]int
+	Send chan int
+	Receive chan int
+	done  bool
+	pc    int
+}
+
+func (c *CPU) Execute(is []Ins) {
+	for c.pc < len(is) {
+		i := is[c.pc]
+		i.Execute(c)
+		//fmt.Printf("%d %#v %#v\n", c.pc, i, c)
+		if c.done {
+			break
+		}
+		c.pc++
+	}
+	close(c.Send)
+}
+
+type SND Ins1
+type SET Ins2
+type ADD Ins2
+type MUL Ins2
+type MOD Ins2
+type RCV Ins1
+type JGZ Ins2
+
+func (i SND) Execute(c *CPU) {
+	//select {
+	//case c.Send <- c.Register[i.X]:
+	//case <-time.After(1 * time.Second):
+	//		c.done = true
+	//}
+	if c.Register[i.X] != 0 {
+		c.Send <- c.Register[i.X]
+	}
+}
+
+func (i SET) Execute(c *CPU) {
+	var v int
+	if i.Yi != nil {
+		v = *i.Yi
+	} else {
+		v = c.Register[*i.Yr]
+	}
+	c.Register[i.X] = v
+}
+
+func (i ADD) Execute(c *CPU) {
+	var v int
+	if i.Yi != nil {
+		v = *i.Yi
+	} else {
+		v = c.Register[*i.Yr]
+	}
+	c.Register[i.X] += v
+}
+
+func (i MUL) Execute(c *CPU) {
+	var v int
+	if i.Yi != nil {
+		v = *i.Yi
+	} else {
+		v = c.Register[*i.Yr]
+	}
+	c.Register[i.X] *= v
+}
+
+func (i MOD) Execute(c *CPU) {
+	var v int
+	if i.Yi != nil {
+		v = *i.Yi
+	} else {
+		v = c.Register[*i.Yr]
+	}
+	c.Register[i.X] = c.Register[i.X] % v
+}
+
+func (i RCV) Execute(c *CPU) {
+	select {
+	case v := <-c.Receive:
+	//v, ok := <-c.Receive
+	//if !ok {
+	//	return
+	//}
+	c.Register[i.X] = v
+	case <-time.After(1 * time.Second):
+		c.done = true
+	}
+}
+
+func (i JGZ) Execute(c *CPU) {
+	var v int
+	if i.Yi != nil {
+		v = *i.Yi
+	} else {
+		v = c.Register[*i.Yr]
+	}
+	if c.Register[i.X] > 0 {
+		c.pc += v - 1
+	}
+}
+
+func (p problem) PartOne(data []byte) (string, error) {
+	ins, err := p.parse(data)
+	if err != nil {
+		return "", err
+	}
+
+	c := &CPU{
+		Register: make(map[byte]int),
+		Send:   make(chan int),
+	}
+
+	go c.Execute(ins)
+	r := <- c.Send
+	c.done = true
+	//for range c.Send {}
+
+	return fmt.Sprintf("%d", r), nil
+}
+
+func (p problem) PartTwo(data []byte) (string, error) {
+	ins, err := p.parse(data)
+	if err != nil {
+		return "", err
+	}
+
+	c0 := &CPU{
+		Register: make(map[byte]int),
+		Receive:   make(chan int),
+	}
+	c0.Register['p'] = 0
+	c1 := &CPU{
+		Register: make(map[byte]int),
+		Receive:   make(chan int),
+	}
+	c1.Register['p'] = 1
+	//cc := make(chan int, 5)
+
+	wg := &sync.WaitGroup{}
+	wg.Add(2)
+	var r int
+	c0.Send = c1.Receive
+	c1.Send = c0.Receive
+	//go func(r *int, c0 chan int) {
+	//	defer wg.Done()
+	//	for {
+	//		v, ok := <- cc
+	//		if !ok {
+	//			close(c0)
+	//			return
+	//		}
+	//		(*r)++
+	//		fmt.Println(v)
+	//		c0 <- v
+	//	}
+	//}(&r, c0.Receive)
+	//go func(r *int, c0 chan int) {
+	//	defer wg.Done()
+	//	for {
+	//		select {
+	//		case v, ok := <- cc:
+	//			if !ok {
+	//				return
+	//			}
+	//			(*r)++
+	//			fmt.Println(v)
+	//			select {
+	//			case c0 <- v:
+	//			case <- time.After(1 * time.Second):
+	//				return
+	//			}
+	//		case <-time.After(1 * time.Second):
+	//			return
+	//		}
+	//	}
+	//}(&r, c0.Receive)
+
+	go func(){
+		defer wg.Done()
+		defer func() {
+			c0.done = true
+		}()
+		c0.Execute(ins)
+	}()
+	go func(){
+		defer wg.Done()
+		defer func() {
+			c1.done = true
+		}()
+		c1.Execute(ins)
+	}()
+
+	wg.Wait()
+	c0.done = true
+	c1.done = true
+
+	return fmt.Sprintf("%d", r), nil
+}
+
+func (problem) parse(data []byte) ([]Ins, error) {
+	var es []Ins
+	for _, line := range bytes.Split(data, []byte("\n")) {
+		if len(line) == 0 {
+			continue
+		}
+		ps := bytes.Split(line, []byte(" "))
+		i := new(int)
+		if len(ps) > 2 {
+			var err error
+			*i, err = strconv.Atoi(string(ps[2]))
+			if err != nil {
+				i = nil
+			}
+		}
+		switch string(ps[0]) {
+		case "snd":
+			es = append(es, SND{ps[1][0]})
+		case "set":
+			es = append(es, SET{ps[1][0], &ps[2][0], i})
+		case "add":
+			es = append(es, ADD{ps[1][0], &ps[2][0], i})
+		case "mul":
+			es = append(es, MUL{ps[1][0], &ps[2][0], i})
+		case "mod":
+			es = append(es, MOD{ps[1][0], &ps[2][0], i})
+		case "rcv":
+			es = append(es, RCV{ps[1][0]})
+		case "jgz":
+			es = append(es, JGZ{ps[1][0], &ps[2][0], i})
+		}
+	}
+	return es, nil
+}

@@ -3,8 +3,15 @@ package day18
 import (
 	"bytes"
 	"fmt"
+	"math/rand"
+	"reflect"
 	"strconv"
+	"sync"
+	"sync/atomic"
+	"time"
 )
+
+const timeFactor = time.Microsecond
 
 type problem struct{}
 
@@ -12,170 +19,223 @@ func Problem() *problem {
 	return &problem{}
 }
 
-type Ins interface {
-	Execute(c *CPU)
-}
-
-type Ins1 struct {
-	X byte
-}
-
-type Ins2 struct {
-	X  byte
-	Yr *byte
-	Yi *int
-}
-
-type CPU struct {
-	Register map[byte]int
-	Result   chan int
-
-	sound int
-	done  bool
-	pc    int
-}
-
-func (c *CPU) Execute(is []Ins) int {
-	go func() {
-		for {
-			i := is[c.pc]
-			i.Execute(c)
-			if c.done {
-				return
-			}
-			c.pc++
-		}
-	}()
-	return <-c.Result
-}
-
-type SND Ins1
-type SET Ins2
-type ADD Ins2
-type MUL Ins2
-type MOD Ins2
-type RCV Ins1
-type JGZ Ins2
-
-func (i SND) Execute(c *CPU) {
-	c.sound = c.Register[i.X]
-}
-
-func (i SET) Execute(c *CPU) {
-	var v int
-	if i.Yi != nil {
-		v = *i.Yi
-	} else {
-		v = c.Register[*i.Yr]
-	}
-	c.Register[i.X] = v
-}
-
-func (i ADD) Execute(c *CPU) {
-	var v int
-	if i.Yi != nil {
-		v = *i.Yi
-	} else {
-		v = c.Register[*i.Yr]
-	}
-	c.Register[i.X] += v
-}
-
-func (i MUL) Execute(c *CPU) {
-	var v int
-	if i.Yi != nil {
-		v = *i.Yi
-	} else {
-		v = c.Register[*i.Yr]
-	}
-	c.Register[i.X] *= v
-}
-
-func (i MOD) Execute(c *CPU) {
-	var v int
-	if i.Yi != nil {
-		v = *i.Yi
-	} else {
-		v = c.Register[*i.Yr]
-	}
-	c.Register[i.X] = c.Register[i.X] % v
-}
-
-func (i RCV) Execute(c *CPU) {
-	if c.Register[i.X] != 0 {
-		c.Result <- c.sound
-		c.done = true
-	}
-}
-
-func (i JGZ) Execute(c *CPU) {
-	var v int
-	if i.Yi != nil {
-		v = *i.Yi
-	} else {
-		v = c.Register[*i.Yr]
-	}
-	if c.Register[i.X] > 0 {
-		c.pc += v - 1
-	}
-}
-
 func (p problem) PartOne(data []byte) (string, error) {
-	ins, err := p.parse(data)
+	program, err := p.parse(data)
 	if err != nil {
 		return "", err
 	}
 
-	c := &CPU{
-		Register: make(map[byte]int),
-		Result:   make(chan int),
+	cpu := &CPU{
+		Registers: make(map[Address]int),
+		Program:   program,
 	}
 
-	r := c.Execute(ins)
+	checkpoint := setUpQueue(cpu, cpu)
+
+	var r int
+	ISA["snd"] = func(cpu *CPU, target, source Operand) {
+		cpu.Registers['s']++
+		address := Address(target.(register))
+		r = cpu.Registers[address]
+	}
+	fmt.Printf("\033[2J")
+
+	go func() {
+		for {
+			//instruction := cpu.Program[cpu.PC]
+			//ISA[instruction.Mnemonic](cpu, instruction.Target, instruction.Source)
+			//cpu.PC++
+
+			instruction := program[cpu.PC]
+			if instruction.Mnemonic == "snd" {
+				cpu.state = sending
+			} else if instruction.Mnemonic != "rcv" {
+				cpu.state = busy
+			}
+			if instruction.Mnemonic == "rcv" || instruction.Mnemonic == "jgz" {
+				if instruction.Mnemonic == "rcv" {
+					cpu.state = waiting
+				}
+				cpu.Render(cpu.ID*61+7, 2)
+				time.Sleep(time.Duration(rand.Intn(200)+300) * timeFactor)
+			}
+			ISA[instruction.Mnemonic](cpu, instruction.Target, instruction.Source)
+			if instruction.Mnemonic != "rcv" && (instruction.Mnemonic != "jgz" || instruction.Target.Value(cpu) != 0) {
+				cpu.Render(cpu.ID*61+7, 2)
+				time.Sleep(time.Duration(rand.Intn(200)+300) * timeFactor)
+			}
+			cpu.Jump(2)
+		}
+	}()
+
+	checkpoint.Deadlocked()
+	checkpoint.Cancel()
 
 	return fmt.Sprintf("%d", r), nil
 }
 
+func setUpQueue(sender, receiver *CPU) checkpoint {
+	q := &queue{
+		Values:     nil,
+		Continue:   make(chan struct{}),
+		Cancel:     make(chan struct{}),
+		Deadlocked: make(chan bool),
+	}
+	sender.Sender = q
+	receiver.Receiver = q
+	receiver.Deadlock = new(atomic.Value)
+	receiver.Deadlock.Store(false)
+	return checkpoint{
+		chanDeadlocked: q.Deadlocked,
+		chanContinue:   q.Continue,
+		chanCancel:     q.Cancel,
+		cpu:            receiver.Deadlock,
+		C:              receiver,
+	}
+}
+
+func deadlocked(cpus []*CPU) bool {
+	for _, cpu := range cpus {
+		if cpu.state != waiting {
+			return false
+		}
+	}
+	fmt.Println("opajuws")
+	return true
+}
+
 func (p problem) PartTwo(data []byte) (string, error) {
-	_, err := p.parse(data)
+	program, err := p.parse(data)
 	if err != nil {
 		return "", err
 	}
 
-	return fmt.Sprintf("%d", 0), nil
+	cpus := []*CPU{
+		{Registers: map[Address]int{'p': 0}, ID: 0},
+		{Registers: map[Address]int{'p': 1}, ID: 1},
+	}
+
+	checkpoints := []checkpoint{
+		setUpQueue(cpus[0], cpus[1]),
+		setUpQueue(cpus[1], cpus[0]),
+	}
+
+	var r int
+
+	ISA["snd"] = func(cpu *CPU, target, source Operand) {
+		if cpu == cpus[1] {
+			r++
+		}
+		cpu.Registers['s']++
+		cpu.Send(target.Value(cpu))
+	}
+
+	fmt.Printf("\033[2J")
+	cpus[0].Program = program
+	cpus[0].Render(7, 2)
+	cpus[1].Program = program
+	cpus[1].Render(7+61, 2)
+
+	wg := &sync.WaitGroup{}
+
+	for i, cpu := range cpus {
+		wg.Add(1)
+
+		go func(cpu *CPU, other *CPU) {
+			defer wg.Done()
+			defer func() { cpu.Deadlock.Store(true) }()
+
+			for cpu.PC < len(program) && !cpu.Deadlock.Load().(bool) {
+				instruction := program[cpu.PC]
+				if instruction.Mnemonic == "snd" {
+					cpu.state = sending
+				} else if instruction.Mnemonic != "rcv" {
+					cpu.state = busy
+				}
+				//fmt.Printf("%s\n", instruction.Mnemonic)
+				if instruction.Mnemonic == "rcv" || instruction.Mnemonic == "jgz" {
+					if instruction.Mnemonic == "rcv" {
+						cpu.state = waiting
+					}
+					cpu.Render(cpu.ID*61+7, 2)
+					if other.Deadlock.Load().(bool) {
+						time.Sleep(time.Duration(rand.Intn(50)+75) * timeFactor)
+					} else {
+						time.Sleep(time.Duration(rand.Intn(200)+300) * timeFactor)
+					}
+				}
+				ISA[instruction.Mnemonic](cpu, instruction.Target, instruction.Source)
+				if instruction.Mnemonic != "rcv" && (instruction.Mnemonic != "jgz" || instruction.Target.Value(cpu) != 0) {
+					cpu.Render(cpu.ID*61+7, 2)
+					if other.Deadlock.Load().(bool) {
+						time.Sleep(time.Duration(rand.Intn(50)+75) * timeFactor)
+					} else {
+						time.Sleep(time.Duration(rand.Intn(200)+300) * timeFactor)
+					}
+				}
+				cpu.Jump(2)
+
+			}
+		}(cpu, cpus[(i+1)%len(cpus)])
+	}
+
+	//for len(checkpoints) > 0 {
+	//fmt.Printf("%#v\n", len(checkpoints))
+	var cases []reflect.SelectCase
+	for i := range checkpoints {
+		cases = append(cases, reflect.SelectCase{
+			Dir:  reflect.SelectRecv,
+			Chan: reflect.ValueOf(checkpoints[i].chanDeadlocked),
+		})
+	}
+
+	go func() {
+		for {
+			i, _, _ := reflect.Select(cases)
+			//fmt.Printf("%d %d %t %t\n", len(checkpoints), i, v.Bool(), ok)
+			//checkpoints[i].cpu.Store(v.Bool())
+			if deadlocked(cpus) {
+				break
+				//checkpoints[i].Cancel()
+				//checkpoints = append(checkpoints[:i], checkpoints[i+1:]...)
+				//continue
+			}
+			checkpoints[i].Continue()
+		}
+	}()
+
+	//fmt.Println(r)
+
+	wg.Wait()
+
+	return fmt.Sprintf("%d", r), nil
 }
 
-func (problem) parse(data []byte) ([]Ins, error) {
-	var es []Ins
+func (problem) parse(data []byte) (Program, error) {
+	var es Program
 	for _, line := range bytes.Split(data, []byte("\n")) {
 		if len(line) == 0 {
 			continue
 		}
 		ps := bytes.Split(line, []byte(" "))
-		i := new(int)
+		target := operandFromBytes(ps[1])
+		var source Operand
 		if len(ps) > 2 {
-			var err error
-			*i, err = strconv.Atoi(string(ps[2]))
-			if err != nil {
-				i = nil
-			}
+			source = operandFromBytes(ps[2])
 		}
-		switch string(ps[0]) {
-		case "snd":
-			es = append(es, SND{ps[1][0]})
-		case "set":
-			es = append(es, SET{ps[1][0], &ps[2][0], i})
-		case "add":
-			es = append(es, ADD{ps[1][0], &ps[2][0], i})
-		case "mul":
-			es = append(es, MUL{ps[1][0], &ps[2][0], i})
-		case "mod":
-			es = append(es, MOD{ps[1][0], &ps[2][0], i})
-		case "rcv":
-			es = append(es, RCV{ps[1][0]})
-		case "jgz":
-			es = append(es, JGZ{ps[1][0], &ps[2][0], i})
-		}
+		es = append(es, Instruction{
+			Mnemonic: string(ps[0]),
+			Target:   target,
+			Source:   source,
+		})
 	}
 	return es, nil
+}
+
+func operandFromBytes(bs []byte) Operand {
+	i, err := strconv.Atoi(string(bs))
+	if err != nil {
+		return register(bs[0])
+	}
+	return immediate(i)
 }
