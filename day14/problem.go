@@ -62,12 +62,12 @@ func (p problem) PartTwo(data []byte) (string, error) {
 			det(&i, &m, x, y)
 		}
 	}
-	for y := 0; y < 8; y++ {
-		for x := 0; x < 8; x++ {
-			fmt.Printf(" [%5t,%3d]", m[y][x].bool, m[y][x].int)
-		}
-		fmt.Println()
-	}
+	//for y := 0; y < 8; y++ {
+	//	for x := 0; x < 8; x++ {
+	//		fmt.Printf(" [%5t,%3d]", m[y][x].bool, m[y][x].int)
+	//	}
+	//	fmt.Println()
+	//}
 	return fmt.Sprintf("%d", i-1), nil
 }
 

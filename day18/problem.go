@@ -11,7 +11,7 @@ import (
 	"time"
 )
 
-const timeFactor = time.Microsecond
+const timeFactor = time.Millisecond
 
 type problem struct{}
 
@@ -26,8 +26,9 @@ func (p problem) PartOne(data []byte) (string, error) {
 	}
 
 	cpu := &CPU{
-		Registers: make(map[Address]int),
-		Program:   program,
+		Registers:  make(map[Address]int),
+		Program:    program,
+		renderFunc: RenderCPU,
 	}
 
 	checkpoint := setUpQueue(cpu, cpu)
@@ -100,7 +101,6 @@ func deadlocked(cpus []*CPU) bool {
 			return false
 		}
 	}
-	fmt.Println("opajuws")
 	return true
 }
 
@@ -111,8 +111,8 @@ func (p problem) PartTwo(data []byte) (string, error) {
 	}
 
 	cpus := []*CPU{
-		{Registers: map[Address]int{'p': 0}, ID: 0},
-		{Registers: map[Address]int{'p': 1}, ID: 1},
+		{Registers: map[Address]int{'p': 0}, ID: 0, renderFunc: RenderCPU},
+		{Registers: map[Address]int{'p': 1}, ID: 1, renderFunc: RenderCPU},
 	}
 
 	checkpoints := []checkpoint{
@@ -142,6 +142,7 @@ func (p problem) PartTwo(data []byte) (string, error) {
 		wg.Add(1)
 
 		go func(cpu *CPU, other *CPU) {
+			defer fmt.Printf("CPU #%d halted\n", cpu.ID)
 			defer wg.Done()
 			defer func() { cpu.Deadlock.Store(true) }()
 
@@ -172,6 +173,8 @@ func (p problem) PartTwo(data []byte) (string, error) {
 					} else {
 						time.Sleep(time.Duration(rand.Intn(200)+300) * timeFactor)
 					}
+				} else if instruction.Mnemonic == "rcv" {
+					cpu.Deadlock.Store(false)
 				}
 				cpu.Jump(2)
 
@@ -190,17 +193,37 @@ func (p problem) PartTwo(data []byte) (string, error) {
 	}
 
 	go func() {
-		for {
-			i, _, _ := reflect.Select(cases)
-			//fmt.Printf("%d %d %t %t\n", len(checkpoints), i, v.Bool(), ok)
-			//checkpoints[i].cpu.Store(v.Bool())
-			if deadlocked(cpus) {
-				break
-				//checkpoints[i].Cancel()
-				//checkpoints = append(checkpoints[:i], checkpoints[i+1:]...)
-				//continue
+		for len(cases) > 0 {
+			//fmt.Printf("len %d\n", len(cases))
+			i, v, ok := reflect.Select(cases)
+			if !ok {
+				cases[i] = reflect.SelectCase{
+					Dir:  reflect.SelectRecv,
+					Chan: reflect.ValueOf(make(chan struct{})),
+				}
+				continue
 			}
-			checkpoints[i].Continue()
+			//fmt.Printf("%d %d %t %t\n", len(checkpoints), i, v.Bool(), ok)
+			checkpoints[i].cpu.Store(v.Bool())
+			if deadlocked(cpus) {
+				checkpoints[i].Cancel()
+				fmt.Printf("cancel %d\n", i)
+				//checkpoints = append(checkpoints[:i], checkpoints[i+1:]...)
+				//cases = append(cases[:i], cases[i+1:]...)
+				//cases = nil
+				//for i := range checkpoints {
+				//	cases = append(cases, reflect.SelectCase{
+				//		Dir:  reflect.SelectRecv,
+				//		Chan: reflect.ValueOf(checkpoints[i].chanDeadlocked),
+				//	})
+				//}
+
+			} else {
+				//continue
+				checkpoints[i].Continue()
+
+				//fmt.Printf("continue %d\n", i)
+			}
 		}
 	}()
 

@@ -26,10 +26,10 @@ func init() {
 	movesExchange = make([]day16.Move, 0)
 	movesPartner = make([]day16.Move, 0)
 	for _, move := range moves {
-		switch {
-		//case move.S:
-		//	movesSpin = append(movesSpin, move)
-		case move.E:
+		switch move.T {
+		case day16.MoveSpin:
+			movesSpin = append(movesSpin, move)
+		case day16.MoveExchange:
 			movesExchange = append(movesExchange, move)
 		default:
 			movesPartner = append(movesPartner, move)
@@ -42,9 +42,10 @@ func BenchmarkProblem_Dance(b *testing.B) {
 	p := day16.Problem()
 	n := b.N
 	b.ResetTimer()
-	for i := 0; i < n; i++ {
-		p.Dance(pr, moves)
-	}
+	//for i := 0; i < n; i++ {
+	//	p.Dance(pr, moves)
+	//}
+	p.DanceTest(n, pr, moves)
 }
 
 func BenchmarkProblem_DanceSpin(b *testing.B) {

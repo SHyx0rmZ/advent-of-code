@@ -17,14 +17,15 @@ const (
 )
 
 type CPU struct {
-	Registers map[Address]int
-	Program   Program
-	PC        int
-	lPC       int
-	Deadlock  *atomic.Value
-	ID        int
-	once      sync.Once
-	state     state
+	Registers  map[Address]int
+	Program    Program
+	PC         int
+	lPC        int
+	Deadlock   *atomic.Value
+	ID         int
+	renderFunc func(*CPU, int, int)
+	once       sync.Once
+	state      state
 	Sender
 	Receiver
 }
@@ -37,6 +38,14 @@ func (c *CPU) Jump(d int) {
 var mu sync.Mutex
 
 func (c *CPU) Render(x, y int) {
+	if c.renderFunc == nil {
+		return
+	}
+
+	c.renderFunc(c, x, y)
+}
+
+func RenderCPU(c *CPU, x, y int) {
 	mu.Lock()
 	defer mu.Unlock()
 

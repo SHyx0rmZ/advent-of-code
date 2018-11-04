@@ -6,9 +6,10 @@ import (
 	"strconv"
 
 	"github.com/SHyx0rmZ/advent-of-code/lib"
-	"runtime/pprof"
-	"os"
+	//"runtime/pprof"
+	//"os"
 	"unsafe"
+	//"runtime/trace"
 )
 
 type problem struct{}
@@ -17,20 +18,44 @@ func Problem() *problem {
 	return &problem{}
 }
 
-func programExchange(a, b int, d *[32]int)
+//go:linkname runtime_procPin runtime.procPin
+//go:nosplit
+func runtime_procPin()
+
+//go:linkname runtime_procUnpin runtime.procUnpin
+//go:nosplit
+func runtime_procUnpin()
+
+func programDance(pr *program, moves []Move)
 
 func (p problem) Dance(pr *program, moves []Move) {
+	programDance(pr, moves)
+	//p.Dance2(pr, moves)
+	//fmt.Printf("pr: %p\nexchange@%#x\n partner@%#x\n    spin@%#x\n", pr, pr.data[0], pr.data[1], pr.data[2])
+	//fmt.Printf("%#v\n%#v\n", moves[len(moves)-2], moves[len(moves)-1])
+}
+
+func (p problem) DanceTest(k int, pr *program, moves []Move) {
+	runtime_procPin()
+	defer runtime_procUnpin()
+	for i := 0; i < k; i++ {
+		p.Dance(pr, moves)
+	}
+}
+
+func (p problem) Dance2(pr *program, moves []Move) {
 	n := len(moves)
 	for i := 0; i < n; i++ {
 		m := moves[i]
-		switch {
+		switch m.T {
 		//case m.S:
 		//	pr.Spin(m.A, m.B)
 		//case m.E:
 		//	pr.Exchange(m.A, m.B)
 		//default:
 		//	pr.Partner(m.A, m.B)
-		case m.E:
+		//case m.E:
+		case MoveExchange:
 			//pr.Exchange(m.A, m.B)
 			//pr.do(m.A, m.B, 0, 16)
 			ca := (*int)(unsafe.Pointer(&pr.data[0]))
@@ -48,7 +73,8 @@ func (p problem) Dance(pr *program, moves []Move) {
 			*ca = pb
 			*cb = pa
 			//programExchange(m.A, m.B, &pr.data)
-		case !m.S:
+		//case !m.S:
+		case MovePartner:
 			ca := (*int)(unsafe.Pointer(&pr.data[16]))
 			cb := (*int)(unsafe.Pointer(&pr.data[16]))
 			ca = (*int)(unsafe.Pointer((uintptr)(unsafe.Pointer(ca)) + uintptr(m.A) * unsafe.Sizeof(int(0))))
@@ -65,6 +91,8 @@ func (p problem) Dance(pr *program, moves []Move) {
 			*cb = pa
 			//pr.Partner(m.A, m.B)
 			//pr.do(m.A, m.B, 16, 0)
+		case MoveSpin:
+			fallthrough
 		default:
 			pr.Spin(m.A, m.B)
 		}
@@ -119,8 +147,10 @@ func (p problem) PartOne(data []byte) (string, error) {
 }
 
 func (p problem) PartTwo(data []byte) (string, error) {
-	pprof.StartCPUProfile(os.Stderr)
-	defer pprof.StopCPUProfile()
+	//pprof.StartCPUProfile(os.Stderr)
+	//defer pprof.StopCPUProfile()
+	//trace.Start(os.Stderr)
+	//defer trace.Stop()
 
 	moves, err := p.Parse(data)
 	if err != nil {
@@ -130,12 +160,16 @@ func (p problem) PartTwo(data []byte) (string, error) {
 	s := lib.Set()
 	d := lib.Dict()
 	k := 1000000000
+	runtime_procPin()
+	defer runtime_procUnpin()
 	for i := 0; i < k; i++ {
-		fmt.Printf("\r%10.6f%%", float64(i*100)/float64(k))
-		h := pr.String()
-		if i > 10000 {
-			break
+		if i % 10000 == 0 {
+			fmt.Printf("\r%10.6f%%", float64(i*100)/float64(k))
 		}
+		h := pr.String()
+		//if i > 10000 {
+		//	break
+		//}
 		//if pr.offset == 0 && s.Contains(h) {
 		//	fmt.Println(", detected cycle")
 		//	v, _ := d.Get(k % i)
@@ -144,6 +178,7 @@ func (p problem) PartTwo(data []byte) (string, error) {
 		s.Add(h)
 		d.Set(i, h)
 		p.Dance(pr, moves)
+		//programDance(pr, moves)
 	}
 	fmt.Println()
 	return pr.String(), nil
@@ -153,7 +188,7 @@ func (problem) Parse(data []byte) ([]Move, error) {
 	var moves []Move
 	var offset int
 	last := &Move{A:-1, B:-1}
-	lastI := -1
+	//lastI := -1
 	for _, i := range bytes.Split(bytes.TrimSpace(data), []byte(",")) {
 		if len(i) == 0 {
 			continue
@@ -176,15 +211,17 @@ func (problem) Parse(data []byte) ([]Move, error) {
 			if err != nil {
 				return nil, err
 			}
-			m := Move{E: true, A: (a+offset)&0xf, B: (b+offset)&0xf}
+			//m := Move{E: true, A: (a+offset)&0xf, B: (b+offset)&0xf}
+			m := Move{T:MoveExchange, A: (a+offset)&0xf, B: (b+offset)&0xf}
 			la, lb := last.A, last.B
 			ma, mb := m.A, m.B
 			switch {
 			case (la == ma && lb == mb) || (la == mb && lb == ma):
 				//fmt.Printf("=")
-				moves = append(moves[:lastI], moves[lastI+1:]...)
-				last = &Move{A:-1, B:-1}
-				lastI = -1
+				//moves = append(moves[:lastI], moves[lastI+1:]...)
+				//last = &Move{A:-1, B:-1}
+				//lastI = -1
+				fallthrough
 			//case la == ma:
 			//	fmt.Printf("a")
 			//	fmt.Printf("\n%#v %#v\n", *last, m)
@@ -212,15 +249,17 @@ func (problem) Parse(data []byte) ([]Move, error) {
 				//fmt.Printf(".")
 				moves = append(moves, m)
 				last = &moves[len(moves) - 1]
-				lastI = len(moves) - 1
+				//lastI = len(moves) - 1
 			}
 			//moves = append(moves, Move{E: true, A: a, B: b})
 		case 'p':
-			moves = append(moves, Move{A: int(ps[0][0] - 'a'), B: int(ps[1][0] - 'a')})
+			//moves = append(moves, Move{A: int(ps[0][0] - 'a'), B: int(ps[1][0] - 'a')})
+			moves = append(moves, Move{A: int(ps[0][0] - 'a'), B: int(ps[1][0] - 'a'), T: MovePartner})
 		default:
 			panic("unknown dance move")
 		}
 	}
-	moves = append(moves, Move{S: true, A: -offset})
+	//moves = append(moves, Move{S: true, A: -offset})
+	moves = append(moves, Move{T:MoveSpin, A: -offset})
 	return moves, nil
 }

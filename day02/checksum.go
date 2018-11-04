@@ -26,33 +26,20 @@ func ChecksumMinMax(data []byte) (int, error) {
 
 func checksum(data []byte, s state) (int, error) {
 	sum := 0
-	for len(data) > 0 {
-		for {
-			i := bytes.IndexAny(data, "\t \n")
-			if i < 1 {
-				// if there are no bytes before the whitespace,
-				// we must have reached the end of the line
-				break
-			}
-			// parse column
-			n, err := strconv.Atoi(string(data[0:i]))
+	for _, line := range bytes.Split(data, []byte{'\n'}) {
+		if len(line) == 0 {
+			continue
+		}
+
+		for _, digits := range bytes.Split(line, []byte{'\t'}) {
+			n, err := strconv.Atoi(string(digits))
 			if err != nil {
 				return 0, err
 			}
 			s.Column(n)
-			// skip data to the next byte behind the whitespace
-			for data[i] == '\t' || data[i] == ' ' {
-				i++
-			}
-			data = data[i:]
 		}
+
 		sum += s.Row()
-		// check for end of input
-		i := bytes.IndexAny(data, "\n")
-		if i != 0 {
-			break
-		}
-		data = data[1:]
 	}
 	return sum, nil
 }

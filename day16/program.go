@@ -1,17 +1,21 @@
 package day16
 
 import (
-	"fmt"
 	"unsafe"
 )
 
 type program struct {
 	data   [32]int
 	offset int
+	hash   []byte
 }
 
 func Program() *program {
-	p := &program{}
+	p := &program{
+		hash: make([]byte, 18, 18),
+	}
+	p.hash[0] = '['
+	p.hash[17] = ']'
 	for i := 0; i < 16; i++ {
 		p.data[i] = i
 		p.data[i+16] = i
@@ -87,11 +91,10 @@ func (p *program) Spin(x int, _ int) {
 }
 
 func (p *program) String() string {
-	s := "["
 	for i := 0; i < 16; i++ {
-		s += fmt.Sprintf("%c", p.data[(i+p.offset)&0xf]+'a')
+		p.hash[i + 1] = byte(p.data[(i+p.offset)&0xf]) + 'a'
 	}
-	return s + "]"
+	return string(p.hash)
 }
 
 // Not used:
