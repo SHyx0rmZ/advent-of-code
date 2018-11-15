@@ -60,7 +60,17 @@ func main() {
 		os.Exit(1)
 	}
 
-	problem, err := strconv.Atoi(os.Args[1])
+	args := struct{
+		Day string
+		Challenge string
+		Input string
+	}{
+		Day:       os.Args[1],
+		Challenge: os.Args[2],
+		Input:     os.Args[3],
+	}
+
+	problem, err := strconv.Atoi(args.Day)
 	if err != nil {
 		panic(err)
 	}
@@ -71,9 +81,9 @@ func main() {
 	var answer string
 
 	if rap, ok := p.(aoc.ReaderAwareProblem); ok {
-		answer, err = solveReaderAwareProblem(rap)
+		answer, err = solveReaderAwareProblem(rap, args.Challenge, args.Input)
 	} else {
-		answer, err = solveProblem(p)
+		answer, err = solveProblem(p, args.Challenge, args.Input)
 	}
 
 	if err != nil {
@@ -83,13 +93,13 @@ func main() {
 	fmt.Fprintf(os.Stdout, "%s\n", answer)
 }
 
-func solveProblem(problem aoc.Problem) (string, error) {
-	data, err := input.ReadInput(os.Args[3])
+func solveProblem(problem aoc.Problem, challenge, path string) (string, error) {
+	data, err := input.ReadInput(path)
 	if err != nil {
 		panic(err)
 	}
 
-	switch os.Args[2] {
+	switch challenge {
 	case "a":
 		return problem.PartOne(data)
 	case "b":
@@ -98,14 +108,14 @@ func solveProblem(problem aoc.Problem) (string, error) {
 	panic("expect either 'a' or 'b'")
 }
 
-func solveReaderAwareProblem(problem aoc.ReaderAwareProblem) (string, error) {
-	r, err := input.OpenInputFile(os.Args[3])
+func solveReaderAwareProblem(problem aoc.ReaderAwareProblem, challenge, path string) (string, error) {
+	r, err := input.OpenInputFile(path)
 	if err != nil {
 		panic(err)
 	}
 	defer r.Close()
 
-	switch os.Args[2] {
+	switch challenge {
 	case "a":
 		return problem.PartOneWithReader(r)
 	case "b":
