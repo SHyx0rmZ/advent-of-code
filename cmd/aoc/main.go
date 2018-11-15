@@ -55,25 +55,38 @@ var problems = []aoc.Problem{
 }
 
 func main() {
-	if len(os.Args) < 4 {
-		fmt.Fprintf(os.Stderr, "usage: %s <01-24> <a|b> <input>\n", filepath.Base(os.Args[0]))
-		os.Exit(1)
+	if len(os.Args) < 3 {
+		usage()
 	}
 
-	args := struct{
-		Day string
+	args := struct {
+		Day       string
 		Challenge string
-		Input string
+		Input     string
 	}{
 		Day:       os.Args[1],
 		Challenge: os.Args[2],
-		Input:     os.Args[3],
+	}
+
+	if len(os.Args) > 3 {
+		args.Input = os.Args[3]
 	}
 
 	problem, err := strconv.Atoi(args.Day)
 	if err != nil {
 		panic(err)
 	}
+
+	if args.Input == "" {
+		path := fmt.Sprintf("day%02d/data/input.txt", problem)
+		f, err := os.Open(path)
+		if err != nil {
+			usage()
+		}
+		f.Close()
+		args.Input = path
+	}
+
 	problem--
 
 	p := problems[problem]
@@ -91,6 +104,11 @@ func main() {
 	}
 
 	fmt.Fprintf(os.Stdout, "%s\n", answer)
+}
+
+func usage() {
+	fmt.Fprintf(os.Stderr, "usage: %s <01-24> <a|b> <input>\n", filepath.Base(os.Args[0]))
+	os.Exit(1)
 }
 
 func solveProblem(problem aoc.Problem, challenge, path string) (string, error) {
