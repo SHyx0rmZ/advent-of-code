@@ -1,6 +1,6 @@
 package day10
 
-import "github.com/SHyx0rmZ/advent-of-code/lib"
+import "github.com/SHyx0rmZ/advent-of-code/pkg/lib"
 
 type Iter struct {
 	Direction

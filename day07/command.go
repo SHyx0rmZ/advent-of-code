@@ -3,7 +3,7 @@ package day07
 import (
 	"errors"
 	"fmt"
-	"github.com/SHyx0rmZ/advent-of-code/lib"
+	"github.com/SHyx0rmZ/advent-of-code/pkg/lib"
 	"math"
 	"strconv"
 	"strings"

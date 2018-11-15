@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/SHyx0rmZ/advent-of-code/day10"
-	"github.com/SHyx0rmZ/advent-of-code/lib"
+	"github.com/SHyx0rmZ/advent-of-code/pkg/lib"
 )
 
 func TestIter_Next(t *testing.T) {

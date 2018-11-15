@@ -27,7 +27,7 @@ import (
 	"github.com/SHyx0rmZ/advent-of-code/day18"
 	"github.com/SHyx0rmZ/advent-of-code/day21"
 	"github.com/SHyx0rmZ/advent-of-code/day20"
-	"github.com/SHyx0rmZ/advent-of-code/input"
+	"github.com/SHyx0rmZ/advent-of-code/pkg/input"
 )
 
 var problems = []aoc.Problem{

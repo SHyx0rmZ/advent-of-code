@@ -3,7 +3,7 @@ package day04
 import (
 	"strings"
 
-	"github.com/SHyx0rmZ/advent-of-code/lib"
+	"github.com/SHyx0rmZ/advent-of-code/pkg/lib"
 )
 
 func Valid(p string) bool {

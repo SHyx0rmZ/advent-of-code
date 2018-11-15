@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/SHyx0rmZ/advent-of-code/lib"
+	"github.com/SHyx0rmZ/advent-of-code/pkg/lib"
 	//"runtime/pprof"
 	//"os"
 	"unsafe"

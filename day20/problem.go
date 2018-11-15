@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"bytes"
 	"sort"
-	"github.com/SHyx0rmZ/advent-of-code/lib"
+	"github.com/SHyx0rmZ/advent-of-code/pkg/lib"
 )
 
 type problem struct {}
