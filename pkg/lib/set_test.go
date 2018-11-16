@@ -1,7 +1,7 @@
 package lib_test
 
 import (
-	"github.com/SHyx0rmZ/advent-of-code/pkg/lib/lib"
+	"github.com/SHyx0rmZ/advent-of-code/pkg/lib"
 	"testing"
 )
 
