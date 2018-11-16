@@ -61,12 +61,12 @@ func (p *program) Partner(a, b int) {
 }
 
 func (p *program) do(a, b, c1, c2 int) {
-	ca := (*int)(unsafe.Pointer((uintptr)(unsafe.Pointer(&p.data[c1])) + uintptr(a) * unsafe.Sizeof(int(0))))
-	cb := (*int)(unsafe.Pointer((uintptr)(unsafe.Pointer(&p.data[c1])) + uintptr(b) * unsafe.Sizeof(int(0))))
+	ca := (*int)(unsafe.Pointer((uintptr)(unsafe.Pointer(&p.data[c1])) + uintptr(a)*unsafe.Sizeof(int(0))))
+	cb := (*int)(unsafe.Pointer((uintptr)(unsafe.Pointer(&p.data[c1])) + uintptr(b)*unsafe.Sizeof(int(0))))
 	pa := *ca
 	pb := *cb
-	*(*int)(unsafe.Pointer((uintptr)(unsafe.Pointer(&p.data[c2])) + uintptr(pa) * unsafe.Sizeof(int(0)))) = b
-	*(*int)(unsafe.Pointer((uintptr)(unsafe.Pointer(&p.data[c2])) + uintptr(pb) * unsafe.Sizeof(int(0)))) = a
+	*(*int)(unsafe.Pointer((uintptr)(unsafe.Pointer(&p.data[c2])) + uintptr(pa)*unsafe.Sizeof(int(0)))) = b
+	*(*int)(unsafe.Pointer((uintptr)(unsafe.Pointer(&p.data[c2])) + uintptr(pb)*unsafe.Sizeof(int(0)))) = a
 	*ca = pb
 	*cb = pa
 }
@@ -92,7 +92,7 @@ func (p *program) Spin(x int, _ int) {
 
 func (p *program) String() string {
 	for i := 0; i < 16; i++ {
-		p.hash[i + 1] = byte(p.data[(i+p.offset)&0xf]) + 'a'
+		p.hash[i+1] = byte(p.data[(i+p.offset)&0xf]) + 'a'
 	}
 	return string(p.hash)
 }

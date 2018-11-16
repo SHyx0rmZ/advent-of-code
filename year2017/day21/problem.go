@@ -26,9 +26,9 @@ func (p problem) PartOneWithReader(r io.Reader) (string, error) {
 	rules = ms
 
 	m := Matrix{
-		0,1,0,
-		0,0,1,
-		1,1,1,
+		0, 1, 0,
+		0, 0, 1,
+		1, 1, 1,
 	}
 
 	for i := 0; i < 5; i++ {
@@ -51,9 +51,9 @@ func (p problem) PartTwoWithReader(r io.Reader) (string, error) {
 	rules = ms
 
 	m := Matrix{
-		0,1,0,
-		0,0,1,
-		1,1,1,
+		0, 1, 0,
+		0, 0, 1,
+		1, 1, 1,
 	}
 
 	for i := 0; i < 18; i++ {
@@ -62,7 +62,6 @@ func (p problem) PartTwoWithReader(r io.Reader) (string, error) {
 
 	return fmt.Sprintf("%#v", m.Count()), nil
 }
-
 
 func offset(c, d, x, y, dx, dy int) int {
 	r := (y*c+dy)*(d*c) + (x * c) + dx

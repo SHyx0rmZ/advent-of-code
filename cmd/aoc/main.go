@@ -7,6 +7,7 @@ import (
 	"strconv"
 
 	"github.com/SHyx0rmZ/advent-of-code"
+	"github.com/SHyx0rmZ/advent-of-code/pkg/input"
 	"github.com/SHyx0rmZ/advent-of-code/year2017/day01"
 	"github.com/SHyx0rmZ/advent-of-code/year2017/day02"
 	"github.com/SHyx0rmZ/advent-of-code/year2017/day03"
@@ -25,9 +26,8 @@ import (
 	"github.com/SHyx0rmZ/advent-of-code/year2017/day16"
 	"github.com/SHyx0rmZ/advent-of-code/year2017/day17"
 	"github.com/SHyx0rmZ/advent-of-code/year2017/day18"
-	"github.com/SHyx0rmZ/advent-of-code/year2017/day21"
 	"github.com/SHyx0rmZ/advent-of-code/year2017/day20"
-	"github.com/SHyx0rmZ/advent-of-code/pkg/input"
+	"github.com/SHyx0rmZ/advent-of-code/year2017/day21"
 )
 
 var problems = []aoc.Problem{

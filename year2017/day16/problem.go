@@ -60,14 +60,14 @@ func (p problem) Dance2(pr *program, moves []Move) {
 			//pr.do(m.A, m.B, 0, 16)
 			ca := (*int)(unsafe.Pointer(&pr.data[0]))
 			cb := (*int)(unsafe.Pointer(&pr.data[0]))
-			ca = (*int)(unsafe.Pointer((uintptr)(unsafe.Pointer(ca)) + uintptr(m.A) * unsafe.Sizeof(int(0))))
-			cb = (*int)(unsafe.Pointer((uintptr)(unsafe.Pointer(cb)) + uintptr(m.B) * unsafe.Sizeof(int(0))))
+			ca = (*int)(unsafe.Pointer((uintptr)(unsafe.Pointer(ca)) + uintptr(m.A)*unsafe.Sizeof(int(0))))
+			cb = (*int)(unsafe.Pointer((uintptr)(unsafe.Pointer(cb)) + uintptr(m.B)*unsafe.Sizeof(int(0))))
 			pa := *ca
 			pb := *cb
 			oa := (*int)(unsafe.Pointer(&pr.data[16]))
 			ob := (*int)(unsafe.Pointer(&pr.data[16]))
-			oa = (*int)(unsafe.Pointer((uintptr)(unsafe.Pointer(oa)) + uintptr(pa) * unsafe.Sizeof(int(0))))
-			ob = (*int)(unsafe.Pointer((uintptr)(unsafe.Pointer(ob)) + uintptr(pb) * unsafe.Sizeof(int(0))))
+			oa = (*int)(unsafe.Pointer((uintptr)(unsafe.Pointer(oa)) + uintptr(pa)*unsafe.Sizeof(int(0))))
+			ob = (*int)(unsafe.Pointer((uintptr)(unsafe.Pointer(ob)) + uintptr(pb)*unsafe.Sizeof(int(0))))
 			*oa = m.B
 			*ob = m.A
 			*ca = pb
@@ -77,14 +77,14 @@ func (p problem) Dance2(pr *program, moves []Move) {
 		case MovePartner:
 			ca := (*int)(unsafe.Pointer(&pr.data[16]))
 			cb := (*int)(unsafe.Pointer(&pr.data[16]))
-			ca = (*int)(unsafe.Pointer((uintptr)(unsafe.Pointer(ca)) + uintptr(m.A) * unsafe.Sizeof(int(0))))
-			cb = (*int)(unsafe.Pointer((uintptr)(unsafe.Pointer(cb)) + uintptr(m.B) * unsafe.Sizeof(int(0))))
+			ca = (*int)(unsafe.Pointer((uintptr)(unsafe.Pointer(ca)) + uintptr(m.A)*unsafe.Sizeof(int(0))))
+			cb = (*int)(unsafe.Pointer((uintptr)(unsafe.Pointer(cb)) + uintptr(m.B)*unsafe.Sizeof(int(0))))
 			pa := *ca
 			pb := *cb
 			oa := (*int)(unsafe.Pointer(&pr.data[0]))
 			ob := (*int)(unsafe.Pointer(&pr.data[0]))
-			oa = (*int)(unsafe.Pointer((uintptr)(unsafe.Pointer(oa)) + uintptr(pa) * unsafe.Sizeof(int(0))))
-			ob = (*int)(unsafe.Pointer((uintptr)(unsafe.Pointer(ob)) + uintptr(pb) * unsafe.Sizeof(int(0))))
+			oa = (*int)(unsafe.Pointer((uintptr)(unsafe.Pointer(oa)) + uintptr(pa)*unsafe.Sizeof(int(0))))
+			ob = (*int)(unsafe.Pointer((uintptr)(unsafe.Pointer(ob)) + uintptr(pb)*unsafe.Sizeof(int(0))))
 			*oa = m.B
 			*ob = m.A
 			*ca = pb
@@ -163,7 +163,7 @@ func (p problem) PartTwo(data []byte) (string, error) {
 	runtime_procPin()
 	defer runtime_procUnpin()
 	for i := 0; i < k; i++ {
-		if i % 10000 == 0 {
+		if i%10000 == 0 {
 			fmt.Printf("\r%10.6f%%", float64(i*100)/float64(k))
 		}
 		h := pr.String()
@@ -187,7 +187,7 @@ func (p problem) PartTwo(data []byte) (string, error) {
 func (problem) Parse(data []byte) ([]Move, error) {
 	var moves []Move
 	var offset int
-	last := &Move{A:-1, B:-1}
+	last := &Move{A: -1, B: -1}
 	//lastI := -1
 	for _, i := range bytes.Split(bytes.TrimSpace(data), []byte(",")) {
 		if len(i) == 0 {
@@ -212,7 +212,7 @@ func (problem) Parse(data []byte) ([]Move, error) {
 				return nil, err
 			}
 			//m := Move{E: true, A: (a+offset)&0xf, B: (b+offset)&0xf}
-			m := Move{T:MoveExchange, A: (a+offset)&0xf, B: (b+offset)&0xf}
+			m := Move{T: MoveExchange, A: (a + offset) & 0xf, B: (b + offset) & 0xf}
 			la, lb := last.A, last.B
 			ma, mb := m.A, m.B
 			switch {
@@ -248,7 +248,7 @@ func (problem) Parse(data []byte) ([]Move, error) {
 			default:
 				//fmt.Printf(".")
 				moves = append(moves, m)
-				last = &moves[len(moves) - 1]
+				last = &moves[len(moves)-1]
 				//lastI = len(moves) - 1
 			}
 			//moves = append(moves, Move{E: true, A: a, B: b})
@@ -260,6 +260,6 @@ func (problem) Parse(data []byte) ([]Move, error) {
 		}
 	}
 	//moves = append(moves, Move{S: true, A: -offset})
-	moves = append(moves, Move{T:MoveSpin, A: -offset})
+	moves = append(moves, Move{T: MoveSpin, A: -offset})
 	return moves, nil
 }

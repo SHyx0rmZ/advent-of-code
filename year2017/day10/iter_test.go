@@ -3,8 +3,8 @@ package day10_test
 import (
 	"testing"
 
-	"github.com/SHyx0rmZ/advent-of-code/year2017/day10"
 	"github.com/SHyx0rmZ/advent-of-code/pkg/lib"
+	"github.com/SHyx0rmZ/advent-of-code/year2017/day10"
 )
 
 func TestIter_Next(t *testing.T) {

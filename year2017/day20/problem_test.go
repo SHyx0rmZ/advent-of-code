@@ -1,9 +1,9 @@
 package day20_test
 
 import (
-	//"testing"
+//"testing"
 
-	//"github.com/SHyx0rmZ/advent-of-code/day20"
+//"github.com/SHyx0rmZ/advent-of-code/day20"
 )
 
 //func TestProblem_PartOne(t *testing.T) {

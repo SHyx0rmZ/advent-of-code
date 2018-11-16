@@ -1,9 +1,9 @@
 package day16
 
 const (
-	MoveSpin = 2
+	MoveSpin     = 2
 	MoveExchange = 0
-	MovePartner = 1
+	MovePartner  = 1
 )
 
 type Move struct {

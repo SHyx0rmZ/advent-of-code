@@ -1,21 +1,21 @@
 package day21
 
 import (
-	"testing"
-	"reflect"
 	"fmt"
+	"reflect"
+	"testing"
 )
 
 func TestMatrixFromBytes(t *testing.T) {
-	tests := []struct{
-		Name string
-		Input []byte
+	tests := []struct {
+		Name   string
+		Input  []byte
 		Matrix *Matrix
 	}{
 		{
 			Name:   "4 succeeds",
-			Input:  []byte{'#','.','/','.','#'},
-			Matrix: &Matrix{1,0,0,1},
+			Input:  []byte{'#', '.', '/', '.', '#'},
+			Matrix: &Matrix{1, 0, 0, 1},
 		},
 	}
 

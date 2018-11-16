@@ -1,13 +1,13 @@
 package day20
 
 import (
-	"fmt"
 	"bytes"
-	"sort"
+	"fmt"
 	"github.com/SHyx0rmZ/advent-of-code/pkg/lib"
+	"sort"
 )
 
-type problem struct {}
+type problem struct{}
 
 func Problem() *problem {
 	return &problem{}
@@ -56,7 +56,7 @@ func (p problem) PartTwo(data []byte) (string, error) {
 		//		break
 		//	}
 		//}
-		pp := ps[len(ps) - 1]
+		pp := ps[len(ps)-1]
 		td := lib.Set()
 		if len(ps) > 1 {
 			for i := range ps {
@@ -77,7 +77,7 @@ func (p problem) PartTwo(data []byte) (string, error) {
 			if ii != 0 {
 				nps = append(nps, ps[cp:ii]...)
 			}
-			cp = ii+1
+			cp = ii + 1
 		}
 		ps = append(nps, ps[cp:]...)
 		//for i := range ps {
@@ -113,9 +113,9 @@ func (p problem) PartTwo(data []byte) (string, error) {
 
 type particles []particle
 
-func (p particles) Len() int { return len(p) }
+func (p particles) Len() int           { return len(p) }
 func (p particles) Less(i, j int) bool { return p[i].Less(p[j]) }
-func (p particles) Swap(i, j int) { p[i], p[j] = p[j], p[i] }
+func (p particles) Swap(i, j int)      { p[i], p[j] = p[j], p[i] }
 
 type particle struct {
 	P vec3
