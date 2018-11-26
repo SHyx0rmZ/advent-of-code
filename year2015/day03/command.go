@@ -2,17 +2,17 @@ package day03
 
 import (
 	"bufio"
-	"container/ring"
 	"fmt"
-	"github.com/SHyx0rmZ/advent-of-code"
 	"io"
+
+	"github.com/SHyx0rmZ/advent-of-code"
 )
 
 type point struct {
 	X, Y int
 }
 
-type problem struct{
+type problem struct {
 	houses map[point]struct{}
 }
 
@@ -23,7 +23,7 @@ func Problem() aoc.ReaderAwareProblem {
 }
 
 func (p problem) PartOneWithReader(r io.Reader) (string, error) {
-	pt := point{0,0}
+	pt := point{0, 0}
 	p.houses[pt] = struct{}{}
 	s := bufio.NewScanner(r)
 	s.Split(bufio.ScanRunes)
@@ -43,27 +43,30 @@ func (p problem) PartOneWithReader(r io.Reader) (string, error) {
 	return fmt.Sprintf("%d", len(p.houses)), s.Err()
 }
 
-func (p problem) PartTwoWithReader(r io.Reader)  (string, error) {
-	pt := ring.New(2)
-	for i := 0; i < pt.Len(); i++ {
-		pt.Value = &point{}
+func (p problem) PartTwoWithReader(r io.Reader) (string, error) {
+	pts := [...]point{
+		{}, // santa
+		{}, // robot
 	}
+	var i int
+	var pt = &pts[i]
 	p.houses[point{}] = struct{}{}
 	s := bufio.NewScanner(r)
 	s.Split(bufio.ScanRunes)
 	for s.Scan() {
 		switch s.Text() {
 		case "^":
-			pt.Value.(*point).Y--
+			pt.Y--
 		case "v":
-			pt.Value.(*point).Y++
+			pt.Y++
 		case "<":
-			pt.Value.(*point).X--
+			pt.X--
 		case ">":
-			pt.Value.(*point).X++
+			pt.X++
 		}
-		p.houses[*pt.Value.(*point)] = struct{}{}
-		pt = pt.Next()
+		p.houses[*pt] = struct{}{}
+		i ^= 1
+		pt = &pts[i]
 	}
 	return fmt.Sprintf("%d", len(p.houses)), s.Err()
 }
