@@ -2,9 +2,6 @@ package main
 
 import (
 	"fmt"
-	"github.com/SHyx0rmZ/advent-of-code/year2015/day02"
-	"github.com/SHyx0rmZ/advent-of-code/year2015/day03"
-	"github.com/SHyx0rmZ/advent-of-code/year2015/day04"
 
 	"os"
 	"path/filepath"
@@ -13,6 +10,10 @@ import (
 	"github.com/SHyx0rmZ/advent-of-code"
 	"github.com/SHyx0rmZ/advent-of-code/pkg/input"
 	"github.com/SHyx0rmZ/advent-of-code/year2015/day01"
+	"github.com/SHyx0rmZ/advent-of-code/year2015/day02"
+	"github.com/SHyx0rmZ/advent-of-code/year2015/day03"
+	"github.com/SHyx0rmZ/advent-of-code/year2015/day04"
+	"github.com/SHyx0rmZ/advent-of-code/year2015/day05"
 )
 
 var problems = []aoc.ReaderAwareProblem{
@@ -20,6 +21,7 @@ var problems = []aoc.ReaderAwareProblem{
 	day02.Problem(),
 	day03.Problem(),
 	day04.Problem(),
+	day05.Problem(),
 }
 
 func main() {
