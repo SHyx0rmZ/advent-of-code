@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"github.com/SHyx0rmZ/advent-of-code/year2015/day02"
+	"github.com/SHyx0rmZ/advent-of-code/year2015/day03"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -15,6 +16,7 @@ import (
 var problems = []aoc.ReaderAwareProblem{
 	day01.Problem(),
 	day02.Problem(),
+	day03.Problem(),
 }
 
 func main() {
