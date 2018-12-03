@@ -36,6 +36,7 @@ func TestProblem_PartTwoWithReader(t *testing.T) {
 	}{
 		{"turn on 0,0 through 0,0", "1"},
 		{"toggle 0,0 through 999,999", "2000000"},
+		{"turn off 0,0 through 0,0", "0"},
 	} {
 		t.Run(tt.Input, func(t *testing.T) {
 			problem := day06.Problem()
