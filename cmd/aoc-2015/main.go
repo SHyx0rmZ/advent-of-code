@@ -14,6 +14,7 @@ import (
 	"github.com/SHyx0rmZ/advent-of-code/year2015/day03"
 	"github.com/SHyx0rmZ/advent-of-code/year2015/day04"
 	"github.com/SHyx0rmZ/advent-of-code/year2015/day05"
+	"github.com/SHyx0rmZ/advent-of-code/year2015/day06"
 )
 
 var problems = []aoc.ReaderAwareProblem{
@@ -22,6 +23,7 @@ var problems = []aoc.ReaderAwareProblem{
 	day03.Problem(),
 	day04.Problem(),
 	day05.Problem(),
+	day06.Problem(),
 }
 
 func main() {
