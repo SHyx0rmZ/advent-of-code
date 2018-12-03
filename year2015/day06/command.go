@@ -7,6 +7,7 @@ import (
 	"image/png"
 	"io"
 	"os"
+	"path/filepath"
 	"strconv"
 )
 
@@ -50,7 +51,12 @@ func (p problem) PartOneWithReader(r io.Reader) (string, error) {
 			}
 		}
 	}
-	e := png.Encode(os.Stderr, i)
+	f, e := os.Create(filepath.Join(os.Getenv("HOME"), "Desktop", "aoc-2015-06a.png"))
+	if e != nil {
+		panic(err)
+	}
+	defer f.Close()
+	e = png.Encode(f, i)
 	if e != nil {
 		panic(e)
 	}

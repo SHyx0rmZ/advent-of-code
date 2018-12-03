@@ -26,12 +26,12 @@ func (p problem) PartOneWithReader(r io.Reader) (string, error) {
 			return "", err
 		}
 		sort.Ints(sides)
-		i += 3 * sides[0] * sides[1] + 2 * sides[0] * sides[2] + 2 * sides[1] * sides[2]
+		i += 3*sides[0]*sides[1] + 2*sides[0]*sides[2] + 2*sides[1]*sides[2]
 	}
 	return fmt.Sprintf("%d", i), s.Err()
 }
 
-func (p problem) PartTwoWithReader(r io.Reader)  (string, error) {
+func (p problem) PartTwoWithReader(r io.Reader) (string, error) {
 	var i int
 	s := bufio.NewScanner(r)
 	s.Split(bufio.ScanLines)
@@ -41,7 +41,7 @@ func (p problem) PartTwoWithReader(r io.Reader)  (string, error) {
 			return "", err
 		}
 		sort.Ints(sides)
-		i += 2 * (sides[0] + sides[1]) + sides[0] * sides[1] * sides[2]
+		i += 2*(sides[0]+sides[1]) + sides[0]*sides[1]*sides[2]
 	}
 	return fmt.Sprintf("%d", i), s.Err()
 }

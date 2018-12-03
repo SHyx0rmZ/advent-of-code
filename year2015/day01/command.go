@@ -30,7 +30,7 @@ func (p problem) PartOneWithReader(r io.Reader) (string, error) {
 	return fmt.Sprintf("%d", i), s.Err()
 }
 
-func (p problem) PartTwoWithReader(r io.Reader)  (string, error) {
+func (p problem) PartTwoWithReader(r io.Reader) (string, error) {
 	var i int
 	var j int
 	s := bufio.NewScanner(r)
