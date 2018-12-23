@@ -20,58 +20,6 @@ func Problem() aoc.ReaderAwareProblem {
 	return &problem{}
 }
 
-type point struct {
-	X, Y int
-}
-
-type terrain byte
-
-const (
-	wall terrain = '#'
-	cave terrain = '.'
-)
-
-type faction byte
-
-const (
-	goblin faction = 'G'
-	elf    faction = 'E'
-)
-
-type unit struct {
-	point
-	faction
-	hp int
-}
-
-type tile struct {
-	terrain
-	*unit
-	extra *byte
-}
-
-type pointSlice []point
-
-func (p pointSlice) Len() int { return len(p) }
-func (p pointSlice) Less(i, j int) bool {
-	if p[i].Y == p[j].Y {
-		return p[i].X < p[j].X
-	}
-	return p[i].Y < p[j].Y
-}
-func (p pointSlice) Swap(i, j int) { t := p[i]; p[i] = p[j]; p[j] = t }
-
-type unitSlice []*unit
-
-func (u unitSlice) Len() int { return len(u) }
-func (u unitSlice) Less(i, j int) bool {
-	if u[i].Y == u[j].Y {
-		return u[i].X < u[j].X
-	}
-	return u[i].Y < u[j].Y
-}
-func (u unitSlice) Swap(i, j int) { t := u[i]; u[i] = u[j]; u[j] = t }
-
 type sf func(m map[point]*tile, w, h int, us unitSlice) sf
 
 var combat bool
@@ -444,7 +392,7 @@ func print(m map[point]*tile, w, h int, us unitSlice) {
 		for x := 0; x < w; x++ {
 			fmt.Printf("\033[%d;%dH", y+1, x+1)
 			t := m[point{x, y}]
-			//fmt.Printf("%#v %v", t, point{x, y})
+			//fmt.Printf("%#v %v", t, Point{x, y})
 			if t.extra != nil {
 				fmt.Print(string(*t.extra))
 			} else if t.unit != nil {
@@ -471,84 +419,4 @@ func print(m map[point]*tile, w, h int, us unitSlice) {
 			es++
 		}
 	}
-}
-
-func aStar(s, g point, m map[point]*tile) []point {
-	vs := make(map[point]struct{})
-	ts := make(map[point]struct{})
-	ts[s] = struct{}{}
-	for p, t := range m {
-		if t.terrain == cave && t.unit == nil {
-			ts[p] = struct{}{}
-		}
-	}
-	d := func(a, b point) int {
-		x := b.X - a.X
-		y := b.Y - a.Y
-		if x < 0 {
-			x = -x
-		}
-		if y < 0 {
-			y = -y
-		}
-		return x + y
-	}
-	h := func(x, y point) int {
-		return d(x, y)
-	}
-	cf := make(map[point]point)
-	cm := make(map[point]int)
-	cm[s] = 0
-	fm := make(map[point]int)
-	fm[s] = h(s, g)
-	rp := func(c point) []point {
-		var p []point
-		for {
-			f, ok := cf[c]
-			if !ok {
-				break
-			}
-			c = f
-			p = append(p, c)
-		}
-		return p
-	}
-	for len(ts) > 0 {
-		var mi struct {
-			int
-			point
-		}
-		mi.int = 999999999
-		var cs pointSlice
-		for t := range ts {
-			cs = append(cs, t)
-		}
-		sort.Sort(sort.Reverse(cs))
-		for _, t := range cs {
-			fs, ok := fm[t]
-			if ok && fs <= mi.int {
-				mi.int = fs
-				mi.point = t
-			}
-			if !ok && mi.int == 999999999 {
-				mi.point = t
-			}
-		}
-		cu := mi.point
-		if cu == g {
-			return rp(cu)
-		}
-		delete(ts, cu)
-		vs[cu] = struct{}{}
-		for _, ne := range []point{{cu.X, cu.Y - 1}, {cu.X - 1, cu.Y}, {cu.X + 1, cu.Y}, {cu.X, cu.Y + 1}} {
-			if _, ok := vs[ne]; ok {
-				continue
-			}
-			s := cm[cu] + d(cu, ne)
-			cf[ne] = cu
-			cm[ne] = s
-			fm[ne] = s + h(ne, g)
-		}
-	}
-	return nil
 }
