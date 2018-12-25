@@ -13,11 +13,18 @@ import (
 
 const delay = 1 * time.Millisecond
 
+type printFn func(m map[point]*tile, w, h int, us unitSlice)
+
 type problem struct {
+	print printFn
 }
 
-func Problem() aoc.ReaderAwareProblem {
-	return &problem{}
+func Problem(verbose bool) aoc.ReaderAwareProblem {
+	var pf printFn
+	if verbose {
+		pf = print
+	}
+	return &problem{pf}
 }
 
 type sf func(m map[point]*tile, w, h int, us unitSlice) sf
@@ -25,7 +32,6 @@ type sf func(m map[point]*tile, w, h int, us unitSlice) sf
 var combat bool
 
 func (p problem) PartOneWithReader(r io.Reader) (string, error) {
-	m := make(map[point]*tile)
 	r = strings.NewReader(`#########
 #G......#
 #.E.#...#
@@ -56,99 +62,43 @@ func (p problem) PartOneWithReader(r io.Reader) (string, error) {
 	//#G..#.#
 	//#..E#.#
 	//#######`)
-	s := bufio.NewScanner(r)
-	var w, h int
-	var y int
-	var us unitSlice
-	var gs int
-	var es int
-	for s.Scan() {
-		for x, c := range s.Text() {
-			p := point{x, y}
-			switch c {
-			case rune(wall):
-				m[p] = &tile{wall, nil, nil}
-			case rune(cave):
-				m[p] = &tile{cave, nil, nil}
-			case rune(goblin):
-				u := &unit{p, goblin, 200}
-				m[p] = &tile{cave, u, nil}
-				us = append(us, u)
-				gs++
-			case rune(elf):
-				u := &unit{p, elf, 200}
-				m[p] = &tile{cave, u, nil}
-				us = append(us, u)
-				es++
-			}
-			if x >= w {
-				w = x
-			}
-		}
-		y++
-	}
-	w++
-	h = y
-	sort.Sort(us)
-	var t int
-	combat = true
-	for combat {
-		for sf := findTargets(0); sf != nil; sf = sf(m, w, h, us) {
-			for _, au := range us {
-				if au.hp <= 0 {
-					var ui int
-					for i, u := range us {
-						if u == au {
-							ui = i
-							break
-						}
-					}
-					us = append(us[:ui], us[ui+1:]...)
-					m[au.point].unit = nil
-				}
 
-			}
-		}
-		t++
-		fmt.Printf("\033[%d;%dH%d   ", 1, w+3, t)
-		time.Sleep(delay)
-		gs = 0
-		es = 0
-		sort.Sort(us)
-		for _, u := range us {
-			if u.faction == goblin {
-				gs++
-			} else {
-				es++
-			}
-		}
-	}
-	t--
-	fmt.Print("\033[2J\033[1;1H")
-	var hp int
-	for _, u := range us {
-		fmt.Println(*u)
-		hp += u.hp
-	}
-	return fmt.Sprintf("%d %d %d\n", t, hp, t*hp), nil
+	c := parseCaves(r)
+	return c.do()
 }
 
 func (p problem) PartTwoWithReader(r io.Reader) (string, error) {
 	return "", nil
 }
 
-func cleanExtra(m map[point]*tile, w, h int) {
-	//return
-	for y := 0; y < h; y++ {
-		for x := 0; x < w; x++ {
-			m[point{x, y}].extra = nil
-		}
+func parseCaves(r io.Reader) *caves {
+	s := bufio.NewScanner(r)
+	cv := &caves{
+		Map: make(map[point]*tile),
 	}
-}
-
-func setExtra(m map[point]*tile, p point, b byte) {
-	//return
-	m[p].extra = &b
+	var y int
+	for s.Scan() {
+		for x, c := range s.Text() {
+			p := point{x, y}
+			switch c {
+			case rune(wall):
+				cv.AddTerrain(p, wall)
+			case rune(cave):
+				cv.AddTerrain(p, cave)
+			case rune(goblin):
+				cv.AddUnit(p, goblin)
+			case rune(elf):
+				cv.AddUnit(p, elf)
+			}
+			if x >= cv.Width {
+				cv.Width = x
+			}
+		}
+		y++
+	}
+	cv.Width++
+	cv.Height = y
+	return cv
 }
 
 func end(m map[point]*tile, w, h int, us unitSlice) sf {
@@ -162,14 +112,8 @@ func findTargets(i int) sf {
 		if i >= len(us) {
 			return nil
 		}
-		cleanExtra(m, w, h)
-		u := us[i]
-		var es unitSlice
-		for _, t := range us {
-			if t.faction != u.faction {
-				es = append(es, t)
-			}
-		}
+		//cleanExtra(m, w, h)
+		es := us.EnemiesOf(us[i])
 		if len(es) == 0 {
 			return end
 		}
@@ -188,7 +132,7 @@ func findOpenSquares(i int, es unitSlice) sf {
 			}
 			if t.terrain == cave && t.unit == nil {
 				sq = append(sq, p)
-				setExtra(m, p, '?')
+				//setExtra(m, p, '?')
 				m[p] = t
 			}
 		}
@@ -205,21 +149,7 @@ func findOpenSquares(i int, es unitSlice) sf {
 func findAttackable(i int, es unitSlice, sq []point) sf {
 	return func(m map[point]*tile, w, h int, us unitSlice) sf {
 		u := us[i]
-		var at unitSlice
-		for _, e := range es {
-			if e.X == u.X && e.Y == u.Y-1 {
-				at = append(at, e)
-			}
-			if e.X == u.X-1 && e.Y == u.Y {
-				at = append(at, e)
-			}
-			if e.X == u.X+1 && e.Y == u.Y {
-				at = append(at, e)
-			}
-			if e.X == u.X && e.Y == u.Y+1 {
-				at = append(at, e)
-			}
-		}
+		at := us.UnitsAttackableBy(u)
 		if len(sq) == 0 && len(at) == 0 {
 			return findTargets(i + 1)
 		}
@@ -243,9 +173,9 @@ func findReachable(i int, es unitSlice, sq []point) sf {
 		if len(rs) == 0 {
 			return findTargets(i + 1)
 		}
-		cleanExtra(m, w, h)
+		//cleanExtra(m, w, h)
 		for p := range rs {
-			setExtra(m, p, '@')
+			//setExtra(m, p, '@')
 		}
 		return findNearest(i, es, sq, rs)
 	}
@@ -259,12 +189,12 @@ func findNearest(i int, es unitSlice, sq []point, rs map[point][]point) sf {
 				mi = len(p)
 			}
 		}
-		cleanExtra(m, w, h)
+		//cleanExtra(m, w, h)
 		ns := make(map[point][]point)
 		for _, p := range sq {
 			if ap, ok := rs[p]; ok && len(ap) == mi {
 				ns[p] = ap
-				setExtra(m, p, '!')
+				//setExtra(m, p, '!')
 			}
 		}
 		return chooseStep(i, es, ns)
@@ -279,8 +209,8 @@ func chooseStep(i int, es unitSlice, ns map[point][]point) sf {
 		}
 		//fmt.Println(ns, ps[0])
 		sort.Sort(ps)
-		cleanExtra(m, w, h)
-		setExtra(m, ps[0], '+')
+		//cleanExtra(m, w, h)
+		//setExtra(m, ps[0], '+')
 		return move(i, es, ps[0], ns[ps[0]])
 	}
 }
@@ -288,8 +218,7 @@ func chooseStep(i int, es unitSlice, ns map[point][]point) sf {
 func move(i int, es unitSlice, p point, a []point) sf {
 	return func(m map[point]*tile, w, h int, us unitSlice) sf {
 		u := us[i]
-		cleanExtra(m, w, h)
-
+		//cleanExtra(m, w, h)
 		fmt.Println(a)
 		for pi, ps := range []point{{u.X, u.Y - 1}, {u.X - 1, u.Y}, {u.X + 1, u.Y}, {u.X, u.Y + 1}, {u.X, u.Y}} {
 			if m[ps].terrain != cave {
@@ -319,31 +248,11 @@ func move(i int, es unitSlice, p point, a []point) sf {
 				m[u.point].unit = u
 			}
 		}
-
-		var at unitSlice
-		for _, e := range es {
-			if e.X == u.X && e.Y == u.Y-1 {
-				at = append(at, e)
-			}
-			if e.X == u.X-1 && e.Y == u.Y {
-				at = append(at, e)
-			}
-			if e.X == u.X+1 && e.Y == u.Y {
-				at = append(at, e)
-			}
-			if e.X == u.X && e.Y == u.Y+1 {
-				at = append(at, e)
-			}
-		}
+		at := us.UnitsAttackableBy(u)
 		if len(at) == 0 {
 			return findTargets(i + 1)
 		}
-		return attack(i, es, at)
-		//for i, ap := range a {
-		//	if i != 0 && i != len(a)-1 {
-		//		setExtra(m, ap, '%')
-		//	}
-		//}
+		//return attack(i, es, at)
 		print(m, w, h, us)
 		fmt.Print("\033[1;40H")
 		fmt.Println(us[i], p, a)
