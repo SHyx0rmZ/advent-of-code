@@ -124,5 +124,53 @@ func (p problem) PartOneWithReader(r io.Reader) (string, error) {
 }
 
 func (p problem) PartTwoWithReader(r io.Reader) (string, error) {
-	return "", nil
+	b, err := NewBoss(r)
+	if err != nil {
+		return "", err
+	}
+	pl := player{
+		unit: unit{
+			Health: 100,
+			Armor:  0,
+		},
+		Mana: 500,
+	}
+	pl = player{unit{10, 0}, 250}
+	b = boss{unit{13, 0}, 8}
+	min := 999999
+	pl = pl
+	b = b
+	return strconv.Itoa(min), nil
+}
+
+type state struct{}
+
+//func recurse(p player, b boss) (int, bool) {
+//	if
+//}
+
+type tree interface {
+	Walk(f func(tree))
+	Value() interface{}
+}
+
+type X spell
+
+func (x X) Walk(f func(tree)) {
+	for _, s := range spells {
+		f((X)(s))
+	}
+}
+
+func (x X) Value() interface{} {
+	return spell(x)
+}
+
+func x() {
+	for _, s := range spells {
+		(X)(s).Walk(func(t tree) {
+			s2 := t.Value().(spell)
+			s2 = s2
+		})
+	}
 }
