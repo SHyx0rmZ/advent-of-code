@@ -8,7 +8,10 @@ import (
 
 const tplProblem = `package {{.Package}}
 
-import "fmt"
+import (
+	"fmt"
+	"io"
+)
 
 type problem struct {}
 
@@ -16,8 +19,8 @@ func Problem() *problem {
 	return &problem{}
 }
 {{range .Methods}}
-func (p problem) {{.}}(data []byte) (string, error) {
-	_, err := p.parse(data)
+func (p problem) {{.}}WithReader(r io.Reader) (string, error) {
+	_, err := p.parse(r)
 	if err != nil {
 		return "", err
 	}
@@ -25,7 +28,7 @@ func (p problem) {{.}}(data []byte) (string, error) {
 	return fmt.Sprintf("%d", 0), nil
 }
 {{end}}
-func (problem) parse(data []byte) ([]int, error) {
+func (problem) parse(r io.Reader) ([]int, error) {
 	var es []int
 	return es, nil
 }
@@ -34,13 +37,14 @@ func (problem) parse(data []byte) ([]int, error) {
 const tplProblemTest = `package {{.Package}}_test
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/SHyx0rmZ/advent-of-code/{{.Package}}"
 )
 {{range .Methods}}
 func TestProblem_{{.}}(t *testing.T) {
-	r, err := {{$.Package}}.Problem().{{.}}([]byte(""))
+	r, err := {{$.Package}}.Problem().{{.}}WithReader(strings.NewReader(""))
 	if r != "" || err != nil {
 		t.Errorf("got (%#v, %+v), want (%#v, %+v)", r, err, "", nil)
 	}
