@@ -9,10 +9,12 @@ import (
 	"strings"
 )
 
-type program []int
+var tens = [...]int{100, 1000, 10000}
 
-func NewProgram(r io.Reader) (program, error) {
-	var p program
+type Program []int
+
+func NewProgram(r io.Reader) (Program, error) {
+	var p Program
 	bs, err := ioutil.ReadAll(r)
 	if err != nil {
 		return nil, err
@@ -27,7 +29,65 @@ func NewProgram(r io.Reader) (program, error) {
 	return p, nil
 }
 
-func (p program) String() string {
+func (p Program) Run(input <-chan int, output chan<- int) {
+	ns := make(Program, len(p))
+	copy(ns, p)
+	ns.RunInPlace(input, output)
+}
+
+func (p Program) RunInPlace(input <-chan int, output chan<- int) {
+	defer close(output)
+	for i := 0; i < len(p); i++ {
+		var ins Instruction
+		switch p[i] % 100 {
+		case 1:
+			ins = &Add{}
+		case 2:
+			ins = &Mul{}
+		case 3:
+			ins = &In{}
+		case 4:
+			ins = &Out{}
+		case 5:
+			ins = &JumpIfTrue{}
+		case 6:
+			ins = &JumpIfFalse{}
+		case 7:
+			ins = &LessThan{}
+		case 8:
+			ins = &Equals{}
+		case 99:
+			ins = &Hlt{}
+		default:
+			panic("op: " + strconv.Itoa(p[i]))
+		}
+		var op []Operand
+		for a := 0; a < Args[p[i]%100]; a++ {
+			if (p[i]%(tens[a]*10))/tens[a] == 1 {
+				op = append(op, &Immediate{Value: p[i+1+a]})
+			} else {
+				op = append(op, &Register{ID: p[i+1+a], Program: p})
+			}
+		}
+		i += Args[p[i]%100]
+		switch ins := ins.(type) {
+		case *In:
+			ins.Src = input
+		case *Out:
+			ins.Dst = output
+		case *JumpIfTrue:
+			ins.IP = &i
+		case *JumpIfFalse:
+			ins.IP = &i
+		case *Hlt:
+			return
+		}
+		ins.Execute(op...)
+	}
+	panic("no result")
+}
+
+func (p Program) String() string {
 	var sb strings.Builder
 	params1 := func(i int) int {
 		sb.WriteByte(' ')
