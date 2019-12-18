@@ -43,6 +43,7 @@ func (p Program) Run(input <-chan int, output chan<- int) {
 
 func (p Program) RunInPlace(input <-chan int, output chan<- int) {
 	defer close(output)
+	var relativeBase int
 	for i := 0; i < len(p); i++ {
 		var ins Instruction
 		switch p[i] % 100 {
@@ -51,43 +52,36 @@ func (p Program) RunInPlace(input <-chan int, output chan<- int) {
 		case 2:
 			ins = &Mul{}
 		case 3:
-			ins = &In{}
+			ins = &In{Src: input}
 		case 4:
-			ins = &Out{}
+			ins = &Out{Dst: output}
 		case 5:
-			ins = &JumpIfTrue{}
+			ins = &JumpIfTrue{IP: &i}
 		case 6:
-			ins = &JumpIfFalse{}
+			ins = &JumpIfFalse{IP: &i}
 		case 7:
 			ins = &LessThan{}
 		case 8:
 			ins = &Equals{}
+		case 9:
+			ins = &AdjustRelativeBase{Base: &relativeBase}
 		case 99:
-			ins = &Hlt{}
+			return
 		default:
 			panic("op: " + strconv.Itoa(p[i]))
 		}
 		var op []Operand
 		for a := 0; a < Args[p[i]%100]; a++ {
-			if (p[i]%(tens[a]*10))/tens[a] == 1 {
+			switch (p[i] % (tens[a] * 10)) / tens[a] {
+			case 2:
+				op = append(op, &Relative{Base: &relativeBase, Offset: p[i+1+a], Program: p})
+			case 1:
 				op = append(op, &Immediate{Value: p[i+1+a]})
-			} else {
+			case 0:
 				op = append(op, &Register{ID: p[i+1+a], Program: p})
 			}
 		}
 		i += Args[p[i]%100]
-		switch ins := ins.(type) {
-		case *In:
-			ins.Src = input
-		case *Out:
-			ins.Dst = output
-		case *JumpIfTrue:
-			ins.IP = &i
-		case *JumpIfFalse:
-			ins.IP = &i
-		case *Hlt:
-			return
-		}
 		ins.Execute(op...)
 	}
 	panic("no result")

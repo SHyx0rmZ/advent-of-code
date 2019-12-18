@@ -16,7 +16,7 @@ import (
 	"github.com/SHyx0rmZ/advent-of-code/year2019/day06"
 	"github.com/SHyx0rmZ/advent-of-code/year2019/day07"
 	"github.com/SHyx0rmZ/advent-of-code/year2019/day08"
-	//"github.com/SHyx0rmZ/advent-of-code/year2015/day09"
+	"github.com/SHyx0rmZ/advent-of-code/year2019/day09"
 	//"github.com/SHyx0rmZ/advent-of-code/year2015/day10"
 	//"github.com/SHyx0rmZ/advent-of-code/year2015/day11"
 	//"github.com/SHyx0rmZ/advent-of-code/year2015/day12"
@@ -44,7 +44,7 @@ var problems = []aoc.ReaderAwareProblem{
 	day06.Problem(),
 	day07.Problem(),
 	day08.Problem(),
-	//day09.Problem(),
+	day09.Problem(),
 	//day10.Problem(),
 	//day11.Problem(),
 	//day12.Problem(),

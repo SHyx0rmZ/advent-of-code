@@ -41,6 +41,15 @@ type Register struct {
 func (r Register) Read() int   { return r.Program[r.ID] }
 func (r Register) Write(v int) { r.Program[r.ID] = v }
 
+type Relative struct {
+	Base    *int
+	Offset  int
+	Program Program
+}
+
+func (r Relative) Read() int   { return r.Program[*r.Base+r.Offset] }
+func (r Relative) Write(v int) { r.Program[*r.Base+r.Offset] = v }
+
 const (
 	ADDRR instruction = ADD | R0 | R1
 	ADDRI instruction = ADD | R0 | I1
@@ -63,6 +72,7 @@ var Args = map[int]int{
 	6:  2,
 	7:  3,
 	8:  3,
+	9:  1,
 	99: 0,
 }
 
