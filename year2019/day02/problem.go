@@ -30,11 +30,10 @@ func (p problem) PartTwoWithReader(r io.Reader) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	bu := make(intcode.Program, len(ns))
-	copy(bu, ns)
+	bu := ns.Copy()
 	for noun := 0; noun < 100; noun++ {
 		for verb := 0; verb < 100; verb++ {
-			copy(ns, bu)
+			ns = bu.Copy()
 			ns[1] = noun
 			ns[2] = verb
 			ns.RunInPlace(nil, make(chan int))

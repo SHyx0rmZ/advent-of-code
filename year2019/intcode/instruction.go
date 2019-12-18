@@ -35,7 +35,7 @@ func (i *Immediate) Write(v int) { i.Value = v }
 
 type Register struct {
 	ID      int
-	Program []int
+	Program Program
 }
 
 func (r Register) Read() int   { return r.Program[r.ID] }

@@ -11,28 +11,34 @@ import (
 
 var tens = [...]int{100, 1000, 10000}
 
-type Program []int
+type Program map[int]int
 
 func NewProgram(r io.Reader) (Program, error) {
-	var p Program
+	p := make(Program)
 	bs, err := ioutil.ReadAll(r)
 	if err != nil {
 		return nil, err
 	}
-	for _, d := range bytes.Split(bytes.TrimSpace(bs), []byte{','}) {
+	for i, d := range bytes.Split(bytes.TrimSpace(bs), []byte{','}) {
 		n, err := strconv.Atoi(string(d))
 		if err != nil {
 			return nil, err
 		}
-		p = append(p, n)
+		p[i] = n
 	}
 	return p, nil
 }
 
-func (p Program) Run(input <-chan int, output chan<- int) {
+func (p Program) Copy() Program {
 	ns := make(Program, len(p))
-	copy(ns, p)
-	ns.RunInPlace(input, output)
+	for k, v := range p {
+		ns[k] = v
+	}
+	return ns
+}
+
+func (p Program) Run(input <-chan int, output chan<- int) {
+	p.Copy().RunInPlace(input, output)
 }
 
 func (p Program) RunInPlace(input <-chan int, output chan<- int) {
