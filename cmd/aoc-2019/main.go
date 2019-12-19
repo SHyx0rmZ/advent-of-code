@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"github.com/SHyx0rmZ/advent-of-code/year2019/day15"
+	"github.com/SHyx0rmZ/advent-of-code/year2019/day16"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -52,6 +53,7 @@ var problems = []aoc.ReaderAwareProblem{
 	nil,
 	nil,
 	day15.Problem(),
+	day16.Problem(),
 	//day11.Problem(),
 	//day12.Problem(),
 	//day13.Problem(),
