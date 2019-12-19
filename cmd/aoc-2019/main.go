@@ -17,22 +17,22 @@ import (
 	"github.com/SHyx0rmZ/advent-of-code/year2019/day07"
 	"github.com/SHyx0rmZ/advent-of-code/year2019/day08"
 	"github.com/SHyx0rmZ/advent-of-code/year2019/day09"
-	//"github.com/SHyx0rmZ/advent-of-code/year2015/day10"
-	//"github.com/SHyx0rmZ/advent-of-code/year2015/day11"
-	//"github.com/SHyx0rmZ/advent-of-code/year2015/day12"
-	//"github.com/SHyx0rmZ/advent-of-code/year2015/day13"
-	//"github.com/SHyx0rmZ/advent-of-code/year2015/day14"
-	//"github.com/SHyx0rmZ/advent-of-code/year2015/day15"
-	//"github.com/SHyx0rmZ/advent-of-code/year2015/day16"
-	//"github.com/SHyx0rmZ/advent-of-code/year2015/day17"
-	//"github.com/SHyx0rmZ/advent-of-code/year2015/day18"
-	//"github.com/SHyx0rmZ/advent-of-code/year2015/day19"
-	//"github.com/SHyx0rmZ/advent-of-code/year2015/day20"
-	//"github.com/SHyx0rmZ/advent-of-code/year2015/day21"
-	//"github.com/SHyx0rmZ/advent-of-code/year2015/day22"
-	//"github.com/SHyx0rmZ/advent-of-code/year2015/day23"
-	//"github.com/SHyx0rmZ/advent-of-code/year2015/day24"
-	//"github.com/SHyx0rmZ/advent-of-code/year2015/day25"
+	"github.com/SHyx0rmZ/advent-of-code/year2019/day10"
+	//"github.com/SHyx0rmZ/advent-of-code/year2019/day11"
+	//"github.com/SHyx0rmZ/advent-of-code/year2019/day12"
+	//"github.com/SHyx0rmZ/advent-of-code/year2019/day13"
+	//"github.com/SHyx0rmZ/advent-of-code/year2019/day14"
+	//"github.com/SHyx0rmZ/advent-of-code/year2019/day15"
+	//"github.com/SHyx0rmZ/advent-of-code/year2019/day16"
+	//"github.com/SHyx0rmZ/advent-of-code/year2019/day17"
+	//"github.com/SHyx0rmZ/advent-of-code/year2019/day18"
+	//"github.com/SHyx0rmZ/advent-of-code/year2019/day19"
+	//"github.com/SHyx0rmZ/advent-of-code/year2019/day20"
+	//"github.com/SHyx0rmZ/advent-of-code/year2019/day21"
+	//"github.com/SHyx0rmZ/advent-of-code/year2019/day22"
+	//"github.com/SHyx0rmZ/advent-of-code/year2019/day23"
+	//"github.com/SHyx0rmZ/advent-of-code/year2019/day24"
+	//"github.com/SHyx0rmZ/advent-of-code/year2019/day25"
 )
 
 var problems = []aoc.ReaderAwareProblem{
@@ -45,7 +45,7 @@ var problems = []aoc.ReaderAwareProblem{
 	day07.Problem(),
 	day08.Problem(),
 	day09.Problem(),
-	//day10.Problem(),
+	day10.Problem(),
 	//day11.Problem(),
 	//day12.Problem(),
 	//day13.Problem(),
