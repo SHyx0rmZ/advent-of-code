@@ -5,6 +5,8 @@ import (
 	"github.com/SHyx0rmZ/advent-of-code/year2019/day14"
 	"github.com/SHyx0rmZ/advent-of-code/year2019/day15"
 	"github.com/SHyx0rmZ/advent-of-code/year2019/day16"
+	"github.com/SHyx0rmZ/advent-of-code/year2019/day18"
+
 	"os"
 	"path/filepath"
 	"strconv"
@@ -55,6 +57,8 @@ var problems = []aoc.ReaderAwareProblem{
 	day14.Problem(),
 	day15.Problem(),
 	day16.Problem(),
+	nil,
+	day18.Problem(),
 	//day11.Problem(),
 	//day12.Problem(),
 	//day13.Problem(),
