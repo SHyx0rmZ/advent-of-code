@@ -9,13 +9,15 @@ import (
 	"io"
 	"math"
 	"os"
-	"runtime/pprof"
-	"sort"
 	"strconv"
-	"time"
+	"sync"
 
 	aoc "github.com/SHyx0rmZ/advent-of-code"
 )
+
+type between [2]byte
+
+//type between struct{ l, r byte }
 
 type point struct {
 	X, Y int
@@ -85,14 +87,14 @@ func Problem() aoc.ReaderAwareProblem {
 }
 
 func (p problem) PartOneWithReader(r io.Reader) (string, error) {
-	pprof.StartCPUProfile(os.Stderr)
-	defer pprof.StopCPUProfile()
-	timer := make(chan struct{})
-	time.AfterFunc(10*time.Second, func() { close(timer) })
+	//pprof.StartCPUProfile(os.Stderr)
+	//defer pprof.StopCPUProfile()
+	//timer := make(chan struct{})
+	//time.AfterFunc(10*time.Second, func() { close(timer) })
 	b := make(board)
-	ks := make(map[byte]point)
-	ds := make(map[byte]point)
-	var e point
+	keys := make(map[byte]point)
+	doors := make(map[byte]point)
+	var entryPoint point
 	var y int
 	s := bufio.NewScanner(r)
 	for s.Scan() {
@@ -100,11 +102,11 @@ func (p problem) PartOneWithReader(r io.Reader) (string, error) {
 			p := point{x, y}
 			switch {
 			case c >= 'a' && c <= 'z':
-				ks[c] = p
+				keys[c] = p
 			case c >= 'A' && c <= 'Z':
-				ds[c] = p
+				doors[c] = p
 			case c == '@':
-				e = p
+				entryPoint = p
 			}
 			b[p] = c
 		}
@@ -153,50 +155,57 @@ func (p problem) PartOneWithReader(r io.Reader) (string, error) {
 			Height: b.Bounds().Dy(),
 		},
 	}
-	//for c := range ks {
+	//for c := range keys {
 	//	i := image.NewPaletted(b.Bounds(), g.Config.ColorModel.(color.Palette))
-	//	i.SetColorIndex(ks[c].X, ks[c].Y, 3)
-	//	i.SetColorIndex(ds[c^0x20].X, ds[c^0x20].Y, 4)
+	//	i.SetColorIndex(keys[c].X, keys[c].Y, 3)
+	//	i.SetColorIndex(doors[c^0x20].X, doors[c^0x20].Y, 4)
 	//	g.Image = append(g.Image, i)
 	//	g.Delay = append(g.Delay, 100)
 	//	g.Disposal = append(g.Disposal, gif.DisposalNone)
 	//}
 
-	sr := make(map[point]struct{})
-	var reduce func(ps []point)
-	reduce = func(ps []point) {
-		if len(ps) == 0 {
+	seen := make(map[point]struct{})
+	var reduce func([]point)
+	reduce = func(points []point) {
+		if len(points) == 0 {
 			return
 		}
-		var tr []point
-		for _, p := range ps {
-			if _, ok := sr[p]; ok {
+		var targets pointSlice
+		for _, p := range points {
+			if _, ok := seen[p]; ok {
 				continue
 			}
-			sr[p] = struct{}{}
-			for _, np := range []point{{p.X, p.Y + 1}, {p.X, p.Y - 1}, {p.X + 1, p.Y}, {p.X - 1, p.Y}} {
-				if b[np] != '#' {
-					tr = append(tr, np)
-				}
-			}
-		}
-		reduce(tr)
-		b.Print(g)
-		for _, p := range ps {
-			if b[p] != '.' {
-				continue
-			}
-			var n int
-			for _, np := range []point{
+			seen[p] = struct{}{}
+			for _, newPoint := range []point{
 				{p.X, p.Y + 1},
 				{p.X, p.Y - 1},
 				{p.X + 1, p.Y},
 				{p.X - 1, p.Y},
 			} {
-				if b[np] == '#' {
+				if b[newPoint] != '#' {
+					targets = append(targets, newPoint)
+				}
+			}
+		}
+		reduce(targets)
+		b.Print(g)
+		for _, p := range points {
+			if b[p] != '.' {
+				continue
+			}
+			var n int
+			for _, newPoint := range []point{
+				{p.X, p.Y + 1},
+				{p.X, p.Y - 1},
+				{p.X + 1, p.Y},
+				{p.X - 1, p.Y},
+			} {
+				if b[newPoint] == '#' {
 					n++
 				}
 			}
+			// Three of p's neighbors are walls, so p
+			// is a dead end. Convert it to a wall.
 			if n == 3 {
 				b[p] = '#'
 			}
@@ -209,268 +218,165 @@ func (p problem) PartOneWithReader(r io.Reader) (string, error) {
 	}
 	defer f.Close()
 	defer gif.EncodeAll(f, g)
-	reduce([]point{e})
+	reduce([]point{entryPoint})
 	b.Print(g)
-	rs := make(map[[2]byte][]point)
-	for k1 := range ks {
-		for k2 := range ks {
-			if k2 == k1 {
+	routes := make(map[between][]point)
+	var routesFast [27][27][]point
+	for key1 := range keys {
+		for key2 := range keys {
+			if key2 == key1 {
 				continue
 			}
-			r, ok := rs[[2]byte{k2, k1}]
+			route, ok := routes[between{key2, key1}]
 			if ok {
 				continue
 			}
-			r = aStar(ks[k1], ks[k2], b)
-			if len(r) == 0 {
+			route = aStar(keys[key1], keys[key2], b)
+			if len(route) == 0 {
 				return "", fmt.Errorf("no path")
 			}
-			rs[[2]byte{k1, k2}] = r
-			//fmt.Println(string(k1), " => ", string(k2), " :", len(r))
+			routes[between{key1, key2}] = route
+			routesFast[key1|0x20-'`'][key2|0x20-'`'] = route
+			routesFast[key2|0x20-'`'][key1|0x20-'`'] = route
+			//fmt.Println(string(key1), " => ", string(key2), " :", len(doors))
 		}
 	}
-	for k2 := range ks {
-		r, ok := rs[[2]byte{k2, '@'}]
+
+	for key2 := range keys {
+		route, ok := routes[between{key2, '@'}]
 		if ok {
 			continue
 		}
-		r = aStar(e, ks[k2], b)
-		if len(r) == 0 {
+		route = aStar(entryPoint, keys[key2], b)
+		if len(route) == 0 {
 			return "", fmt.Errorf("no path")
 		}
-		rs[[2]byte{'@', k2}] = r
-		//fmt.Println(string(k1), " => ", string(k2), " :", len(r))
+		routes[between{'@', key2}] = route
 	}
-	d := make(map[[2]byte][]byte)
-	for k, r := range rs {
-		d[k] = nil
-		for _, p := range r {
-			if 'A' <= b[p] && b[p] <= 'Z' {
-				d[k] = append(d[k], b[p])
+	//doorsPerRoute := make(map[between]int32)
+	var doorsPerRoute [27][27]int32
+	for key, route := range routes {
+		for _, point := range route {
+			if 'A' <= b[point] && b[point] <= 'Z' {
+				doorsPerRoute[key[0]|0x20-'`'][key[1]|0x20-'`'] |= 1 << (b[point] - 'A')
 			}
 		}
-	}
-	for k, dx := range d {
-		fmt.Println(string(k[:]), ":", string(dx))
 	}
 	// from here on, just try all combinations?
 	// limit choices by keys picked up (0 initially)
-	collected := func(ds []byte, ks int32) bool {
-		for _, d := range ds {
-			if (ks & (1 << ((d | 0x20) - 'a'))) == 0 {
-				return false
-			}
-			//if _, ok := ks[d|0x20]; !ok {
-			//	return false
-			//}
+	var rspk [26][]between
+	for k := range routes {
+		l := k[0] - 'a'
+		//l := int32(1) << (k.l - 'a')
+		r := k[1] - 'a'
+		//r := int32(1) << (k.r - 'a')
+		if k[0] != '@' {
+			//if k.l != '@' {
+			rspk[l] = append(rspk[l], k)
+			//rspk[l] = append(rspk[l], k)
 		}
-		return true
+		if k[1] != '@' {
+			//if k.r != '@' {
+			rspk[r] = append(rspk[r], k)
+		}
 	}
-	possible := func(s byte, x [][2]byte, ks int32) [][2]byte {
-		var r [][2]byte
-		for _, p := range x {
-			if p[0] != s && p[1] != s {
+	var lookup [27][27][27]byte
+	for points := range routes {
+		lookup[points[0]|0x20-'`'][points[1]|0x20-'`'][points[0]|0x20-'`'] = points[1]
+		lookup[points[0]|0x20-'`'][points[1]|0x20-'`'][points[1]|0x20-'`'] = points[0]
+	}
+	goal := func(s byte, p between) byte {
+		//return lookup[[3]byte{
+		//	s,
+		//	p[0],
+		//	p[1],
+		//}]
+		return lookup[p[0]|0x20-'`'][p[1]|0x20-'`'][s|0x20-'`']
+	}
+	mp := sync.Pool{New: func() interface{} {
+		return make([]between, 0, 26*27)
+	}}
+	possible := func(start byte, _ []between, keys int32) []between {
+		choices := mp.Get().([]between)
+		for i := 0; i < 26; i++ {
+			if (start-'a') != byte(i) && keys&(1<<i) != 0 {
 				continue
 			}
-			if !collected(d[p], ks) {
-				continue
+			for _, points := range rspk[i] {
+				switch {
+				case points[0] == start:
+					//case points.l == start:
+					if keys&(1<<(points[1]-'a')) != 0 {
+						//if keys&(1<<(points.r-'a')) != 0 {
+						continue
+					}
+				case points[1] == start:
+					//case points.r == start:
+					if keys&(1<<(points[0]-'a')) != 0 {
+						//if keys&(1<<(points.l-'a')) != 0 {
+						continue
+					}
+				default:
+					continue
+				}
+				if doorsPerRoute[points[0]|0x20-'`'][points[1]|0x20-'`']&^keys != 0 {
+					continue
+				}
+				choices = append(choices, points)
 			}
-			r = append(r, p)
 		}
-		return r
+		return choices
 	}
-	goal := func(s byte, p [2]byte) byte {
-		switch {
-		case p[0] == s:
-			return p[1]
-		case p[1] == s:
-			return p[0]
-		default:
-			panic("invalid")
-		}
+	copyThings := func(start, goal byte, doorsPerRoute []between, collected int32) ([]between, int32) {
+		//newDoorsPerRoute := make([][2]byte, 0, len(doorsPerRoute))
+		//for _, db := range doorsPerRoute {
+		//	if db[0] == start || db[1] == start {
+		//		continue
+		//	}
+		//	newDoorsPerRoute = append(newDoorsPerRoute, db)
+		//}
+		newDoorsPerRoute := doorsPerRoute
+		newCollected := collected
+		newCollected |= 1 << (goal - 'a')
+		return newDoorsPerRoute, newCollected
 	}
-	copym := func(s, g byte, d [][2]byte, c int32) ([][2]byte, int32) {
-		var dc [][2]byte
-		for _, db := range d {
-			if db[0] == s || db[1] == s {
-				continue
-			}
-			dc = append(dc, db)
+	//var xx int
+	var shortest func(start byte, paths []between, collected int32, cost int) int
+	shortest = func(start byte, paths []between, collected int32, cost int) int {
+		if collected == 0b11111111111111111111111111 {
+			return cost
 		}
-		cc := c
-		cc |= 1 << (g - 'a')
-		return dc, cc
-	}
-	var shortest func(s byte, rs map[[2]byte][]point, x [][2]byte, c int32, t int) int
-	shortest = func(s byte, rs map[[2]byte][]point, x [][2]byte, c int32, t int) int {
-		if c == 0b11111111111111111111111111 {
-			return t
-		}
-		select {
-		case <-timer:
-			return t
-		default:
-		}
-		ps := possible(s, x, c)
-		if len(ps) == 0 {
+		//select {
+		//case <-timer:
+		//	fmt.Println(xx)
+		//	return cost
+		//default:
+		//	xx++
+		//	fmt.Println(bits.OnesCount32(uint32(collected)))
+		//}
+		choices := possible(start, paths, collected)
+		if len(choices) == 0 {
 			return math.MaxInt32
 		}
-		dc, cc := copym(s, goal(s, ps[0]), x, c)
-		m := shortest(goal(s, ps[0]), rs, dc, cc, len(rs[ps[0]])+t)
-		for _, p := range ps[1:] {
-			dc, cc = copym(s, goal(s, p), x, c)
-			v := shortest(goal(s, p), rs, dc, cc, len(rs[p])+t)
-			if v < m {
-				m = v
+		fewerPaths, biggerKeyCollection := copyThings(start, goal(start, choices[0]), paths, collected)
+		minCost := shortest(goal(start, choices[0]), fewerPaths, biggerKeyCollection, len(routesFast[choices[0][0]|0x20-'`'][choices[0][1]|0x20-'`'])+cost)
+		for _, choice := range choices[1:] {
+			fewerPaths, biggerKeyCollection = copyThings(start, goal(start, choice), paths, collected)
+			currentCost := shortest(goal(start, choice), fewerPaths, biggerKeyCollection, len(routesFast[choice[0]|0x20-'`'][choice[1]|0x20-'`'])+cost)
+			if currentCost < minCost {
+				minCost = currentCost
 			}
 		}
-		return m
+		mp.Put(choices[:0])
+		return minCost
 	}
-	var x [][2]byte
-	for k := range d {
-		x = append(x, k)
+	var paths []between
+	for key := range routes {
+		paths = append(paths, key)
 	}
-	sh := shortest('@', rs, x, 0, 0)
-	return strconv.Itoa(sh), nil
+	return strconv.Itoa(shortest('@', paths, 0, 0)), nil
 }
 
 func (p problem) PartTwoWithReader(r io.Reader) (string, error) {
 	return "", nil
-}
-
-func hsl(hue, saturation, lightness float64) color.RGBA {
-	c := (1 - math.Abs(2.0*lightness-1)) * saturation
-	h := hue / 60.0
-	x := c * (1 - math.Abs(math.Mod(h, 2)-1))
-	var r, g, b float64
-	switch {
-	case 0 <= h && h <= 1:
-		r, g = c, x
-	case 1 <= h && h <= 2:
-		r, g = x, c
-	case 2 <= h && h <= 3:
-		g, b = c, x
-	case 3 <= h && h <= 4:
-		g, b = x, c
-	case 4 <= h && h <= 5:
-		r, b = x, c
-	case 5 <= h && h <= 6:
-		r, b = c, x
-	}
-	m := lightness - c/2
-	return color.RGBA{
-		R: uint8((r + m) * 255.0),
-		G: uint8((g + m) * 255.0),
-		B: uint8((b + m) * 255.0),
-		A: 255,
-	}
-}
-
-// this should be somewhat more correct than the other versions
-func aStar(start, goal point, m board) []point {
-	visited := make(map[point]struct{})
-	toVisit := make(map[point]struct{})
-	toVisit[start] = struct{}{}
-	//for p, t := range m {
-	//	if t != '#' {
-	//		toVisit[p] = struct{}{}
-	//	}
-	//}
-	distance := func(a, b point) int {
-		x := b.X - a.X
-		y := b.Y - a.Y
-		if x < 0 {
-			x = -x
-		}
-		if y < 0 {
-			y = -y
-		}
-		return x + y
-	}
-	heuristic := distance
-	cameFrom := make(map[point]point)
-	scores := make(map[point]int)
-	scores[start] = 0
-	estimatedScores := make(map[point]int)
-	estimatedScores[start] = heuristic(start, goal)
-	reconstructPath := func(current point) []point {
-		ps := []point{goal}
-		for {
-			p, ok := cameFrom[current]
-			if !ok {
-				break
-			}
-			current = p
-			ps = append(ps, current)
-		}
-		return ps
-	}
-	for len(toVisit) > 0 {
-		var minimum struct {
-			Score int
-			Point point
-		}
-		minimum.Score = infinity
-		var ps pointSlice
-		for t := range toVisit {
-			ps = append(ps, t)
-		}
-		sort.Sort(sort.Reverse(ps))
-		for _, p := range ps {
-			estimatedScore, ok := estimatedScores[p]
-			if ok && estimatedScore <= minimum.Score {
-				minimum.Score = estimatedScore
-				minimum.Point = p
-			}
-			if !ok && minimum.Score == infinity {
-				minimum.Point = p
-			}
-		}
-		current := minimum.Point
-		if current == goal {
-			return reconstructPath(current)
-		}
-		delete(toVisit, current)
-		visited[current] = struct{}{}
-		for _, neighbor := range []point{
-			{current.X, current.Y - 1},
-			{current.X - 1, current.Y},
-			{current.X + 1, current.Y},
-			{current.X, current.Y + 1},
-		} {
-			if _, ok := visited[neighbor]; ok {
-				continue
-			}
-			if m[neighbor] == '#' {
-				continue
-			}
-			score := scores[current] + distance(current, neighbor)
-			cameFrom[neighbor] = current
-			scores[neighbor] = score
-			estimatedScores[neighbor] = score + heuristic(neighbor, goal)
-			if _, ok := toVisit[neighbor]; !ok {
-				toVisit[neighbor] = struct{}{}
-			}
-		}
-	}
-	return nil
-}
-
-const infinity = 999999999
-
-type pointSlice []point
-
-func (p pointSlice) Len() int {
-	return len(p)
-}
-
-func (p pointSlice) Less(i, j int) bool {
-	if p[i].Y == p[j].Y {
-		return p[i].X < p[j].X
-	}
-	return p[i].Y < p[j].Y
-}
-
-func (p pointSlice) Swap(i, j int) {
-	p[i], p[j] = p[j], p[i]
 }
