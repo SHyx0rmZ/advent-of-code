@@ -9,7 +9,10 @@ import (
 	"io"
 	"math"
 	"os"
+	"runtime/pprof"
 	"sort"
+	"strconv"
+	"time"
 
 	aoc "github.com/SHyx0rmZ/advent-of-code"
 )
@@ -82,6 +85,10 @@ func Problem() aoc.ReaderAwareProblem {
 }
 
 func (p problem) PartOneWithReader(r io.Reader) (string, error) {
+	pprof.StartCPUProfile(os.Stderr)
+	defer pprof.StopCPUProfile()
+	timer := make(chan struct{})
+	time.AfterFunc(10*time.Second, func() { close(timer) })
 	b := make(board)
 	ks := make(map[byte]point)
 	ds := make(map[byte]point)
@@ -248,8 +255,83 @@ func (p problem) PartOneWithReader(r io.Reader) (string, error) {
 	}
 	// from here on, just try all combinations?
 	// limit choices by keys picked up (0 initially)
-
-	return "", nil
+	collected := func(ds []byte, ks int32) bool {
+		for _, d := range ds {
+			if (ks & (1 << ((d | 0x20) - 'a'))) == 0 {
+				return false
+			}
+			//if _, ok := ks[d|0x20]; !ok {
+			//	return false
+			//}
+		}
+		return true
+	}
+	possible := func(s byte, x [][2]byte, ks int32) [][2]byte {
+		var r [][2]byte
+		for _, p := range x {
+			if p[0] != s && p[1] != s {
+				continue
+			}
+			if !collected(d[p], ks) {
+				continue
+			}
+			r = append(r, p)
+		}
+		return r
+	}
+	goal := func(s byte, p [2]byte) byte {
+		switch {
+		case p[0] == s:
+			return p[1]
+		case p[1] == s:
+			return p[0]
+		default:
+			panic("invalid")
+		}
+	}
+	copym := func(s, g byte, d [][2]byte, c int32) ([][2]byte, int32) {
+		var dc [][2]byte
+		for _, db := range d {
+			if db[0] == s || db[1] == s {
+				continue
+			}
+			dc = append(dc, db)
+		}
+		cc := c
+		cc |= 1 << (g - 'a')
+		return dc, cc
+	}
+	var shortest func(s byte, rs map[[2]byte][]point, x [][2]byte, c int32, t int) int
+	shortest = func(s byte, rs map[[2]byte][]point, x [][2]byte, c int32, t int) int {
+		if c == 0b11111111111111111111111111 {
+			return t
+		}
+		select {
+		case <-timer:
+			return t
+		default:
+		}
+		ps := possible(s, x, c)
+		if len(ps) == 0 {
+			return math.MaxInt32
+		}
+		dc, cc := copym(s, goal(s, ps[0]), x, c)
+		m := shortest(goal(s, ps[0]), rs, dc, cc, len(rs[ps[0]])+t)
+		for _, p := range ps[1:] {
+			dc, cc = copym(s, goal(s, p), x, c)
+			v := shortest(goal(s, p), rs, dc, cc, len(rs[p])+t)
+			if v < m {
+				m = v
+			}
+		}
+		return m
+	}
+	var x [][2]byte
+	for k := range d {
+		x = append(x, k)
+	}
+	sh := shortest('@', rs, x, 0, 0)
+	return strconv.Itoa(sh), nil
 }
 
 func (p problem) PartTwoWithReader(r io.Reader) (string, error) {
