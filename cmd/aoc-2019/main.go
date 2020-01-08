@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"github.com/SHyx0rmZ/advent-of-code/year2019/day14"
+	"github.com/SHyx0rmZ/advent-of-code/year2019/day13"
 	"github.com/SHyx0rmZ/advent-of-code/year2019/day15"
 	"github.com/SHyx0rmZ/advent-of-code/year2019/day16"
 	"github.com/SHyx0rmZ/advent-of-code/year2019/day18"
@@ -26,7 +26,7 @@ import (
 	//"github.com/SHyx0rmZ/advent-of-code/year2019/day11"
 	//"github.com/SHyx0rmZ/advent-of-code/year2019/day12"
 	//"github.com/SHyx0rmZ/advent-of-code/year2019/day13"
-	//"github.com/SHyx0rmZ/advent-of-code/year2019/day14"
+	//"github.com/SHyx0rmZ/advent-of-code/year2019/day13"
 	//"github.com/SHyx0rmZ/advent-of-code/year2019/day15"
 	//"github.com/SHyx0rmZ/advent-of-code/year2019/day16"
 	//"github.com/SHyx0rmZ/advent-of-code/year2019/day17"
@@ -53,8 +53,8 @@ var problems = []aoc.ReaderAwareProblem{
 	day10.Problem(),
 	nil,
 	nil,
+	day13.Problem(),
 	nil,
-	day14.Problem(),
 	day15.Problem(),
 	day16.Problem(),
 	nil,
@@ -62,7 +62,7 @@ var problems = []aoc.ReaderAwareProblem{
 	//day11.Problem(),
 	//day12.Problem(),
 	//day13.Problem(),
-	//day14.Problem(),
+	//day13.Problem(),
 	//day15.Problem(),
 	//day16.Problem(),
 	//day17.Problem(),

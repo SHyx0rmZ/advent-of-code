@@ -1,4 +1,4 @@
-package day14
+package day13
 
 import (
 	"image"
@@ -156,7 +156,7 @@ func (p problem) PartTwoWithReader(r io.Reader) (string, error) {
 			Height: b.Bounds().Dy(),
 		},
 	}
-	f, err := os.Create("day14.gif")
+	f, err := os.Create("day13.gif")
 	if err != nil {
 		panic(err)
 	}
