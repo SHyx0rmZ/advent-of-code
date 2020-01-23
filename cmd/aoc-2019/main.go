@@ -2,10 +2,14 @@ package main
 
 import (
 	"fmt"
+	"github.com/SHyx0rmZ/advent-of-code/year2019/day11"
 	"github.com/SHyx0rmZ/advent-of-code/year2019/day13"
+	"github.com/SHyx0rmZ/advent-of-code/year2019/day14"
 	"github.com/SHyx0rmZ/advent-of-code/year2019/day15"
 	"github.com/SHyx0rmZ/advent-of-code/year2019/day16"
+	"github.com/SHyx0rmZ/advent-of-code/year2019/day17"
 	"github.com/SHyx0rmZ/advent-of-code/year2019/day18"
+	"github.com/SHyx0rmZ/advent-of-code/year2019/day19"
 
 	"os"
 	"path/filepath"
@@ -51,15 +55,15 @@ var problems = []aoc.ReaderAwareProblem{
 	day08.Problem(),
 	day09.Problem(),
 	day10.Problem(),
-	nil,
+	day11.Problem(),
 	nil,
 	day13.Problem(),
-	nil,
+	day14.Problem(),
 	day15.Problem(),
 	day16.Problem(),
-	nil,
+	day17.Problem(),
 	day18.Problem(),
-	//day11.Problem(),
+	day19.Problem(),
 	//day12.Problem(),
 	//day13.Problem(),
 	//day13.Problem(),
